@@ -1,0 +1,23 @@
+effect logging
+    fun log(msg : string) : ()
+
+fun console-logging(action)
+    with handler fun log(msg) println(msg)
+    action()
+
+
+fun collect-logging(action)
+    with handler fun log(msg) println(msg)
+    action()
+
+fun main()
+    with collect-logging
+    logMain()
+
+fun printMain() : console ()
+    val text = "Hello World!"
+    println(text)
+
+fun logMain() : logging ()
+    val text = "Hello World!"
+    log(text)
