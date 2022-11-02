@@ -1,0 +1,32 @@
+-- helloWorld : '{IO, Exception} ()
+-- helloWorld _ = printLine "Hello World!!!"
+
+structural ability UserInteraction where
+	askFromUser : Text
+	sayToUser : Text -> ()
+
+hello   : Text
+hello = "Hello"
+
+testSay : '{UserInteraction} ()
+testSay _ = sayToUser "What's your name?"
+
+testAsk : '{UserInteraction} Text
+testAsk _ = askFromUser
+
+testBoth : {UserInteraction} Text
+testBoth _ =
+	testSay
+	answer = testAsk
+
+	answer ++ " was the answer"
+
+> testBoth
+-- > testSay
+-- > testAsk
+
+-- program : {UserInteraction} ()
+-- program _ =
+-- 	sayToUser "What's your name?"
+	-- name = askFromUser
+	-- sayToUser = "Hello " ++ name

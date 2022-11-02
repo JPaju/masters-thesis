@@ -1,0 +1,72 @@
+structural ability UserInteraction where
+    ask : {UserInteraction} Text
+    say : Text -> {UserInteraction} ()
+
+
+interactionProgram : '{UserInteraction} ()
+interactionProgram = do
+    UserInteraction.say "What's your name"
+    name = UserInteraction.ask
+    greeting = "Hello " ++ name
+    UserInteraction.say greeting
+
+
+
+-- ------------------------------------------ CONSOLE ------------------------------------------
+
+consoleInteractionHandler : Request UserInteraction () -> {IO, Exception} ()
+consoleInteractionHandler = cases
+  { UserInteraction.ask -> resume } -> handle resume !console.getLine with consoleInteractionHandler
+  { UserInteraction.say t -> resume } -> printLine t; handle resume () with consoleInteractionHandler
+  { _ } -> ()
+
+toConsoleInteraction : '{g, UserInteraction} () -> '{g, IO, Exception} ()
+toConsoleInteraction userInteractions = '(handle !userInteractions with consoleInteractionHandler)
+
+
+-- ------------------------------------------ HARD CODED ------------------------------------------
+
+headOrAbort : List a -> a
+headOrAbort as =
+  Abort.toBug '(List.head as |> Optional.toAbort)
+
+tailOrAbort : List a -> [a]
+tailOrAbort as =
+  Abort.toBug '(List.tail as |> Optional.toAbort)
+  
+collectingInteractionHandler: [Text] -> '{UserInteraction} a -> ([Text], [Text])
+collectingInteractionHandler allAnswers userInteractions =
+  impl: [Text] -> [Text] -> Request UserInteraction a -> ([Text], [Text])
+  impl said answers = cases
+    { UserInteraction.ask -> resume } ->
+      handle resume (headOrAbort answers) with impl said (tailOrAbort answers)
+      
+    { UserInteraction.say t -> resume } ->
+      handle resume () with impl (said :+ t) answers
+
+    { _ } -> (said, allAnswers)
+
+  handle !userInteractions with impl [] allAnswers
+
+jaakko : '{UserInteraction} () -> ([Text], [Text])
+jaakko = collectingInteractionHandler ["Jaakko", "Left over"]
+
+
+
+-- ------------------------------------------ PROVIDE HANDLERS ------------------------------------------
+
+interactionConsole : '{IO, Exception} ()
+interactionConsole = '(handle !interactionProgram with consoleInteractionHandler)
+
+interactionFake : '()
+interactionFake = do
+  format : [Text] -> Text
+  format strs =
+    separator = "\n|\t"
+    strs
+      |> List.map (str -> separator ++ str)
+      |> Text.join ""
+
+  (said, answered) = jaakko interactionProgram
+  printLine ("Said: " ++ (format said))
+  printLine ("Answered: " ++ (format answered))

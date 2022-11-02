@@ -1,0 +1,26 @@
+structural ability Exception e where
+  raise : e -> a
+
+toOptional : '{Exception e} a -> Optional a
+toOptional mightThrow =
+  handle !mightThrow with cases
+    { raise e -> c }  -> None
+    { a }             -> Some a
+
+handleWith : (e -> {g1} a) -> '{g2, Exception e} a -> {g1, g2} a
+handleWith excHandler mightThrow =
+  handle !mightThrow with cases
+    { raise e -> resume } -> excHandler e
+    { a }                 ->  a
+
+withDefaultValue : a -> '{Exception e} a -> a
+withDefaultValue defaultValue mightThrow = 
+  handleWith (_ -> defaultValue) mightThrow
+
+divide : Nat -> Nat -> Nat
+divide dividend divisor =
+  if divisor == 0 then Exception.raise "Division by zero"
+  else dividend / divisor
+
+> '(divide 2 1) |> toOptional -- Some 2
+> '(divide 1 0) |> toOptional -- None
