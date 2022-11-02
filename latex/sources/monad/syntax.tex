@@ -1,0 +1,32 @@
+\begin{algorithm}
+
+\begin{minipage}{0.35\textwidth}
+\begin{minted}{scala}
+// Direct style
+val num1: Int = 3
+val num2: Int = 4
+val sum: Int  =
+    num1 + num2
+    
+
+\end{minted}
+\end{minipage}
+%
+%\hspace{0.05\textwidth}
+%
+\begin{minipage}{0.45\textwidth}
+%\vspace{0.05\textwidth}
+\begin{minted}{scala}
+// Monadic style
+val optionNum1: Option[Int] = Option(3)
+val optionNum2: Option[Int] = Option(4)
+val optionSum: Option[Int]  =
+  optionNum1.flatMap(n1 =>
+    optionNum2.map(n2 =>
+      n1 + n2))
+\end{minted}
+\end{minipage}
+    
+\caption{Direct vs. monadic syntax in Scala %
+\label{monad:syntax}}
+\end{algorithm}

@@ -1,0 +1,17 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+def mightFail: IO[Either[String, Unit]]   = ???
+def willNotFail: IO[Either[Nothing, Int]] = ???
+
+val program: IO[Either[String, Int]] =
+  for
+                       // Type of _ is Either[String, Unit]
+    _   <- mightFail   // Even if line evaluates to Left[String]
+    res <- willNotFail // ... this line will still be executed
+  yield res
+\end{minted}
+
+\caption{Subtle bugs not causing early termination or compilation error %
+\label{monadtransformer:subtle-bugs}}
+\end{algorithm}

@@ -1,0 +1,16 @@
+\begin{algorithm}
+
+\begin{minted}{koka}
+effect exception
+  ctl raise (exc : e) : a
+
+fun to-maybe(might-throw : () -> <exception|x> a) // : x maybe<a>
+  with handler
+    raise(e)  -> Nothing
+    return(a) -> Just(a)
+  might-throw()
+\end{minted}
+
+\caption{Exception effect and handler in Koka %
+\label{alg-eff:koka-exc}}
+\end{algorithm}

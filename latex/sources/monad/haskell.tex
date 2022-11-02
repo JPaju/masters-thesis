@@ -1,0 +1,11 @@
+\begin{algorithm}
+
+\begin{minted}{haskell}
+class Functor m => Monad m where
+  return :: a -> m a
+  ( >>= ) :: m a -> (a -> m b) -> m b
+\end{minted}
+
+\caption{Monad type class in Haskell %
+\label{monad:haskell}}
+\end{algorithm}

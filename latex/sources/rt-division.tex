@@ -1,0 +1,69 @@
+% \begin{algorithm}
+% 
+%  \begin{minted}{scala}
+%  def division1: Int = // Evaluates to -1
+%    try 1 / 0
+%    catch case exception => -1
+%  
+%  def division2: Int = // Throws exception
+%    val n = 1 / 0
+%    try n
+%    catch case exception => -1
+%  \end{minted}
+% 
+% \caption{Exceptions break referential transparency \label{rt:exceptions}}
+% \end{algorithm}
+
+% \begin{minipage}{0.40\textwidth}
+%     \begin{algorithm}[H]
+%     \begin{minted}{scala}
+%      def division1: Int =
+%        try
+%          1 / 0
+%        catch case ex => -1
+%     \end{minted}
+%     \caption{Evaluates to -1}
+%     \end{algorithm}
+% \end{minipage}
+% %
+% \hspace{0.05\textwidth}
+% %
+% \begin{minipage}{0.40\textwidth}
+%     \begin{algorithm}[H]
+%     \begin{minted}{scala}
+%      def division2: Int =
+%        val n = 1 / 0
+%        try n
+%        catch case ex => -1
+%     \end{minted}
+%     \caption{Throws exception}
+%     \end{algorithm}
+% \end{minipage}
+
+
+\begin{algorithm}
+    \begin{minipage}{0.40\textwidth}
+    \begin{minted}{scala}
+    def `evaluates to -1`: Int =
+      try 1 / 0
+      catch case ex => -1
+    \end{minted}
+    \caption{Evaluates to -1}
+    \end{minipage}
+    %
+    \hspace{0.05\textwidth}
+    %
+    \begin{minipage}{0.40\textwidth}
+    \vspace{0.05\textwidth}
+    \begin{minted}{scala}
+    def `throws exception`: Int =
+      val res = 1 / 0
+      try res
+      catch case ex => -1
+    \end{minted}
+    \caption{Throws exception}
+    \end{minipage}
+
+    \caption{Throwing exceptions breaks referential transparency %
+    \label{rt:exceptions}}
+\end{algorithm}

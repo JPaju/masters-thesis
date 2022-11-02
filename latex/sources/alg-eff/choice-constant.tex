@@ -1,0 +1,23 @@
+\begin{algorithm}
+
+\begin{minted}{ocaml}
+constantChoice : Boolean -> '{Choice} a -> {} a
+constantChoice choice thunk =
+  handle !thunk with cases
+    { choose -> resume }  -> constantChoice choice '(resume choice)
+    { a }                 -> a
+
+alwaysTrue  : '{Choice} a -> {} a
+alwaysTrue = constantChoice true
+
+alwaysFalse : '{Choice} a -> {} a
+alwaysFalse = constantChoice false
+    
+alwaysTrue pickNumber  -- 12
+alwaysFalse pickNumber -- 43
+\end{minted}
+
+\caption{Effect handlers for Choice that always result in constant value %
+\label{alg-eff:choice-constant}}
+\end{algorithm}
+\endinput

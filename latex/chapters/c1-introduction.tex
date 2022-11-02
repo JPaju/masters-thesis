@@ -1,0 +1,24 @@
+\chapter{Introduction} \label{Introduction}
+The theoretical foundations functional programming dates back to almost a hundred years, when lambda calculus was invented in the 1930s. However, all of today's most widely used programming languages, ranked by TIOBE Index~\cite{tiobe-index}, are fundamentally imperative, perhaps because of historical and social reasons. Many functional concepts, however, have been recognized to be valuable in modern software development, and as a result we have seen a wider industry adoption of these concepts in the recent years. Features characteristic of functional languages, like immutability, lambdas and higher-order functions, have found their way to imperative and object-oriented mainstream languages like JavaScript, Python, Java, and C\#. Many imperative languages provide, for example, a collection API that is built around higher-order functions to transform and filter the elements of a collection. Also React and Angular, the most popular front-end frameworks currently, rely on immutability in their change detection algorithms.
+
+Functional concepts mentioned above are naturally suited for concurrency and modeling complex business logic, that is the core of modern applications. However, in order for an application to be practically useful, it must also communicate with the external world. This communication, such as database calls, interacting with the file system, making requests over the network, user interaction or displaying information in the user interface, is effectful by nature. Many mainstream languages have constructs in their standard library to model these kinds of asynchronous, and possibly side-effecting, interactions. For example \inlinecode{Promise} in JavaScript, \inlinecode{Task} in C\# and \inlinecode{Future} in Java. All of these data types are eagerly evaluated and their results are memoized.
+
+Current mainstream languages use imperative programming in those parts of applications that communicate with the external world. These parts of applications do not benefit from the advantages that functional programming allows, like composability, modularity, and easy refactoring. In purely functional programming side effects are modeled in a referentially transparent way where combining side effects is convenient, and refactoring can be guaranteed not to change the meaning of the program. The difference with imperative languages is that instead of \textit{performing} side effects, the program \textit{describes} them, and they are executed later by a specific runtime. Programming in a style where any statement can perform arbitrary side effects is considered to produce programs that are error prone and difficult to maintain.~\cite[Chapter~3]{sicp}
+
+The thesis focuses on Scala~\cite{scala}, which is a high level, statically typed programming language that is both functional and object-oriented. Functional programming is the recommended style of programming in Scala, even though the language permits imperative style of programming. For example, variables and collections are immutable by default, but mutable counterparts also exist. Scala has many advanced features like higher-kinded types, contra- and covariance, extensions methods, pattern matching, lazy evaluation, algebraic data types, term inference, and syntax for monadic computations.
+
+ZIO~\cite{zio} is an open-source Scala library for modeling asynchronous, concurrent and possibly side-effecting programs in a purely functional way. The first stable release of the library took place in the summer of 2020, so it is quite a new library. Nevertheless, many large companies, including Adidas, Capital One, eBay and Zalando are using ZIO in production. There is also a very active and quickly expanding ecosystem around ZIO, that has libraries and interoperability packages with other libraries and ecosystems.
+
+This thesis aims to study theoretical foundations of effect systems, ways to program with side effects in a purely functional context, discuss pros and cons of these techniques, and take a deeper look into ZIO. A practical part of the thesis includes designing and implementing a small application using ZIO.
+
+% TODO Tuo selkeämmin ilmi että työ käsittelee vain staattisesti tyypitettyjä kieliä
+
+\begin{itemize}
+    \item Research questions ?
+
+    \item Kontribuutiot
+    \begin{itemize}
+        \item Mitä rakennettiin?
+        \item Miten rakennettiin?
+    \end{itemize}
+\end{itemize}

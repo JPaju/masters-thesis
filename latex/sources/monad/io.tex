@@ -1,0 +1,15 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+case class IO[A](run: () => A)
+
+given Monad[IO] = new:
+  def pure[A](a: A): IO[A] = IO(() => a)
+  extension [A](io: IO[A])
+    def flatMap[B](f: A => IO[B]): IO[B] =
+      IO(() => f(io.run()).run())
+\end{minted}
+
+\caption{Naive IO monad in Scala %
+\label{monad:io}}
+\end{algorithm}

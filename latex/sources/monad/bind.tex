@@ -1,0 +1,27 @@
+\begin{algorithm}
+
+\begin{comment}
+\begin{minted}{haskell}
+name :: IO ()
+name =
+  putStrLn "What's your name?" >>= \_ ->
+  getLine >>= \name -> 
+  putStrLn ("Nice to meet you " ++ name)
+\end{minted}
+\end{comment}
+
+
+\begin{minted}{haskell}
+suits = ["Club", "Heart", "Diamond", "Spade"]
+ranks = [2..14]
+
+-- [("Club", 2), ("Club", 3), ... ,("Spade", 13), ("Spade", 14)]
+deck =
+  suits >>= \suit ->
+  ranks >>= \rank ->
+  return (suit, rank)
+\end{minted}
+
+\caption{Monadic bind in list monad results in a cartesian product %
+\label{monad:bind}}
+\end{algorithm}

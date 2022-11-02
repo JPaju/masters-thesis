@@ -1,0 +1,22 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+
+// Capture checking models effects as function parameters
+// CanThrow is required in order to throw exceptions of specific type
+def divide(x: Int, y: Int)(using CanThrow[ArithmeticException]): Int =
+  if y == 0 then throw new ArithmeticException("division by zero")
+  else x / y
+\end{minted}
+
+\begin{minted}{koka}
+// In Koka, and many other traditional effect systems,
+// effects appear in the return type
+fun divide(x : int, y : int) : exn int 
+  if y == 0 then throw("division by zero")
+  else x / y
+\end{minted}
+
+\caption{Capture checking vs Koka effect system %
+\label{scala:cc-vs-koka}}
+\end{algorithm}

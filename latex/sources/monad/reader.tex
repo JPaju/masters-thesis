@@ -1,0 +1,18 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+case class Reader[-R, +A](run: R => A)
+
+object Reader:
+  def ask[R]: Reader[R, R] = Reader(r => r)
+
+given [R]: Monad[[A] =>> Reader[R, A]] = new:
+  def pure[A](a: A): Reader[R, A] = Reader(_ => a)
+  extension [A](self: Reader[R, A])
+    def flatMap[B](f: A => Reader[R, B]): Reader[R, B] =
+      Reader(r => f(self.run(r)).run(r))
+\end{minted}
+
+\caption{Reader monad in Scala %
+\label{monad:reader}}
+\end{algorithm}

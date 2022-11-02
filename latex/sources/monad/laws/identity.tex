@@ -1,0 +1,18 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+def pure[A](a: A): Option[A] = Monad[Option].pure(a)
+def f(n: Int)                = pure(n + 1)
+
+// Left identity
+val x: Int = 1
+pure(x).flatMap(n => f(n)) == f(x)
+
+// Right identity
+val num: Option[Int] = pure(1)
+num.flatMap(n => pure(n)) == num
+\end{minted}
+
+\caption{Monad identity laws in Scala %
+\label{monad:laws:identity}}
+\end{algorithm}

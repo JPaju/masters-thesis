@@ -1,0 +1,14 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+type Id[A] = A
+      
+given Monad[Id] with
+  def pure[A](a: A): Id[A] = a
+  extension [A](a: Id[A])
+    def flatMap[B](f: A => Id[B]): Id[B] = f(a)
+\end{minted}
+
+\caption{Identity monad in Scala %
+\label{monad:id}}
+\end{algorithm}

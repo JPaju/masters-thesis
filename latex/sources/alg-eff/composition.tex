@@ -1,0 +1,12 @@
+\begin{algorithm}
+
+\begin{minted}{ocaml}
+failingNumber : '{Choice, Exception Text} Nat
+failingNumber = do
+  if choose then 34
+  else raise "Better luck next time"
+\end{minted}
+
+\caption{Effect composition in Unison %
+\label{alg-eff:composition}}
+\end{algorithm}

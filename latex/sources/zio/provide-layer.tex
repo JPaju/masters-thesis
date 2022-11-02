@@ -1,0 +1,19 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+trait Random:
+  def boolean: UIO[Boolean]
+
+val alwaysTrue: ULayer[Random] =
+  ZLayer.succeed(new Random { def boolean = UIO.succeed(true) })
+
+val requiresRandom: ZIO[Random, Nothing, String] =
+  Random.boolean.map(won => if (won) "Won" else "Lost")
+
+val randomProvided: ZIO[Any, Nothing, String] =
+  alwaysTrue(requiresRandom) // "Won"
+
+\end{minted}
+
+\caption{ZIO layers eliminate requirements from computations \label{zio:provide-layer}}
+\end{algorithm}

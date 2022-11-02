@@ -1,0 +1,15 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+val numberZio  = ZIO.succeed(2)
+val doubledZio = numberZio.map(n => n * 2)
+
+val sum: UIO[Int] =
+  for
+    a <- numberZio
+    b <- doubledZio
+  yield a + b
+\end{minted}
+
+\caption{ZIO Basics \label{zio:basics}}
+\end{algorithm}

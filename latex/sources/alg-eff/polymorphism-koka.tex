@@ -1,0 +1,17 @@
+\begin{algorithm}
+
+\begin{minted}{koka}
+fun map(lst : list<a>, f : a -> e b) : e list<b>
+  match lst
+    Cons(head, tail)  -> Cons(f(head), map(tail, f))
+    Nil               -> Nil
+
+val nums: list<int> = [1, 2, 3, 4, 5]
+val pure: list<int> = map(nums, fn(n) n * 2)
+fun effectful(): exception list<int>
+  map(nums, fn(n) if n > 5 then raise("Too large") else n * 2)
+\end{minted}
+
+\caption{Effect polymorphism in Koka %
+\label{alg-eff:polymorphism-koka}}
+\end{algorithm}

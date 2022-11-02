@@ -1,0 +1,19 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+def fn(str: String): IO[Either[Unit, Int]] = ???
+
+val ioEitherString: IO[Either[Unit, String]] = IO(Right("initial str"))
+
+val ioEitherInt: IO[Either[Unit, Int]] =
+  ioEitherString.flatMap(either =>
+    either.fold(
+      error => IO(Left(error)),
+      success => fn(success),
+    )
+  )
+\end{minted}
+
+\caption{Syntax overhead of nesting Either and IO monads %
+\label{monadtransformer:io-either}}
+\end{algorithm}

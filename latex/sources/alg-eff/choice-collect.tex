@@ -1,0 +1,20 @@
+\begin{algorithm}
+
+\begin{minted}{ocaml}
+collectAll : '{Choice} a -> {} [a]
+collectAll thunk = 
+  collectHandler : Request Choice a -> [a]
+  collectHandler = cases
+    { choose -> resume }  ->
+      (handle resume true with collectHandler) ++
+      (handle resume false with collectHandler)
+    { a } -> [a]
+
+  handle !thunk with collectHandler
+  
+collectAll pickNumber -- [12, 21, 34, 43]
+\end{minted}
+
+\caption{Effect handler for Choice that collects all possible results %
+\label{alg-eff:choice-collect}}
+\end{algorithm}

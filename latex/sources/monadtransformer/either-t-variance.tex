@@ -1,0 +1,13 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+case class CovariantEitherT[F[+_], +E, +A](effect: F[Either[E, A]])
+
+case class EitherT[F[_], E, A](effect: F[Either[E, A]]):
+  def leftWiden[E1 >: E]: EitherT[F, E1, A] =
+    this.asInstanceOf[EitherT[F, E1, A]]
+\end{minted}
+
+\caption{EitherT leftWiden method %
+\label{monadtransformer:either-t-variance}}
+\end{algorithm}

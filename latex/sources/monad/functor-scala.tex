@@ -1,0 +1,10 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+trait Functor[F[_]]:
+  extension [A](fa: F[A]) def map[B](f: A => B): F[B]
+\end{minted}
+
+\caption{Functor type class in Scala 3 %
+\label{functor:scala}}
+\end{algorithm}

@@ -1,0 +1,16 @@
+\begin{algorithm}
+
+\begin{minted}{ocaml}
+structural ability Exception e where
+  raise : e -> a
+
+toOptional : '{Exception e} a -> Optional a
+toOptional mightThrow =
+  handle !mightThrow with cases
+    { raise e -> c }  -> None
+    { a }             -> Some a
+\end{minted}
+
+\caption{Exception ability and handler in Unison %
+\label{alg-eff:unison-exc}}
+\end{algorithm}

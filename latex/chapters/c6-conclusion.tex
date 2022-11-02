@@ -1,0 +1,34 @@
+\chapter{Conclusion}
+
+% - Tracking effects has not been widely adopted in the industry.
+%   - There could be huge potential if developer ergonomics, education and tooling are good enough.
+
+% - Puhtaasti funktionaalisessa ja laiskassa kielessä (Haskell) ei sinänsä ole tarvetta effect systemille, koska:
+% "But effect systems are designed for impure,. strict functional languages, where the order of sequencing is implicit. Our work is designed for pure, lazy functional languages, and the purpose of the 'bind' operation is to make sequencing explicit where it is required."
+%   - Imperative functional programming p. 13, ch. 7.1
+
+% - Computations as values (monadic & unison, but not algebraic effects in general) has many use cases in distributed systems
+
+
+% ----------- Monads vs. Algebraic effects -----------
+% Monadic effects encode computation and values as just values
+% Algebraic effects separate values from computations (expressions vs. effects&handlers)
+% Effect composition
+%   - Monadic effects don't compose very nicely (monad transformers)
+%   - Language level algebraic effects usually compose very easily.
+% Both monadic and algebraic effect are RT and allow equational reasoning
+%   - Imperative functional programming p. 13, ch. 7.1
+% Effect composition is not commutative by nature, and neither of the techniques can avoid that
+
+% ----------- Something about the maturity different technologies -----------
+% - Monadic effects are quite mature and many mainstream language has support for them
+% - "Programming with effects and handlers is in its infancy.", Do Be Do Be Do p. 1, ch. 1
+%   - No mainstream language supports algebraic effects and handlers natively.
+% - Algebraic effects could be utilized in implementation of multi-platform applications to abstract the underlying platform ?
+%   - "The ability of main is the external ability of the whole program. We can use it to configure the runtime to the execution context: is it a terminal? is it a phone? is it a browser? What will the user let us do?" - Do Be Do Be Do, p. 12, c. 6
+
+
+% ----------- Something about ZIO -----------
+%   - Takes inspiration from effect systems, algebraic effects and brings them into the world of monadic effects?
+%   - Maybe the absolute best (ergonomics & teachability) vs alg eff, but best that is currently available in mainstream lanuage  for production applications
+%   - Interesting to see how Unison will do

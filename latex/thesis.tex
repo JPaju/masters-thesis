@@ -1,0 +1,99 @@
+% Document template suitable for use as a LaTeX master-file for master's
+% thesis in University of Turku Department of Computing.
+
+% HOW TO USE? See https://ttweb.utugit.fi/thesis/doc/overview/
+
+\documentclass[language=english,version=draft,mainfont=none,minted=true]{utuftthesis}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{float}
+\usepackage[caption=false]{subfig}
+\usepackage{etoolbox}
+\usepackage{setspace}
+
+% Define the algorithm environment
+%\makeatletter
+\providecommand\textquotedblplain{%
+  \bgroup\addfontfeatures{Mapping=}\char34\egroup}
+\providecommand{\tabularnewline}{\\}
+\floatstyle{ruled}
+\newfloat{algorithm}{htbp}{loa}
+\providecommand{\algorithmname}{Algoritmi}
+\floatname{algorithm}{\protect\algorithmname}
+%\makeatother
+
+% \renewcommand\floatpagefraction{.85}
+% \renewcommand\topfraction{.1}
+
+
+\addbibresource{Bibliography.bib}
+
+\begin{document}
+
+\pubyear{2022}
+\pubmonth{5}
+\publab{Software Engineering}
+\pubtype{di}
+% \title{Managing side effects with functional effect systems}
+\title{Purely functional statically typed programming with side effects}
+\author{Jaakko Paju}
+\supervisors{Jaakko Järvi}
+
+\maketitle
+
+\input{abstract.tex}
+
+\tableofcontents % mandatory
+
+\input{acronyms}
+% \listoffigures % if you want a list of figures
+% \listoftables % if you want a list of tables
+\listofacronyms % if you want a list of acronyms
+
+% change the name if the default doesn't sound right
+\renewcommand{\algorithmname}{\listingscaption}
+
+\newcommand{\todo}[1]{\textcolor{red}{TODO: #1}}
+\newcommand{\rly}[1]{\textcolor{red}{CHECK:} \textcolor{gray}{#1}}
+
+\newcommand{\refsource}[1]{Listing \ref{#1}}
+
+\newcommand{\acronym}[2]{\nomenclature{#1}{#2} #2 (#1)}
+
+% Minted 
+\AtBeginEnvironment{algorithm}{\singlespacing}
+\setmintedinline{breaklines}
+\newcommand{\inlinecode}[1]{\mintinline{text}{#1}}
+\newcommand{\inlinescala}[1]{\mintinline{scala}{#1}}
+\newcommand{\inlinehaskell}[1]{\mintinline{haskell}{#1}}
+
+% Citing
+\newcommand{\titlecite}[1]{\citetitle{#1}~\cite{#1}}
+% \newcommand{\titlecite}[1]{\citetitle{#1}}
+
+% Content
+\input{chapters/c1-introduction.tex}
+\input{chapters/c2-background.tex}
+\input{chapters/c3-zio.tex}
+\input{chapters/c4-case-description.tex}
+\input{chapters/c5-case-study.tex}
+\input{chapters/c6-conclusion.tex}
+
+\printbibliography
+
+\begin{comment}
+Important! Create the appendix chapters with command \textbackslash appchapter\{some
+name\} instead of \textbackslash chapter\{some name\} for the automagic
+page counting to work!
+\end{comment}
+
+
+\appchapter{Liitedokumentti}
+
+Liitteen ohjelmakoodi kuvaa matemaattisen
+monadirakenteen pohjalta rakentuvan Haskellin tyyppiluokan. Tyyppiluokan
+voi nähdä eräänlaisena abstraktina ohjelmointirajapintana % (API\nomenclature[API]{API}{Application Programming Interface}),
+joka muodostaa ohjelmoijalle abstraktin ohjelmointikielen käyttöliittymän
+% (UI\nomenclature[UI]{UI}{User Interface}).
+
+\end{document}

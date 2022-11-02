@@ -1,0 +1,55 @@
+\chapter{ZIO} \label{zio}
+\section{Overview}
+\begin{itemize}
+    \item Scala-kirjasto sivuvaikutusten hallintaan
+    \item Vertical effect rotation
+    \item Parempi suorituskyky kuin monad transformereilla (tai ainakin niin väitetään)
+    \item Myös muita ominaisuuksia kuten type safe DI, Lokitus, Tracing, Resource handling, Streaming, STM
+    \item Ei vaadi merkittävää teoreettista osaamista funktionaalisesta ohjelmoinnista, kuten type classit ja higher kinded types %   - Mainitse että ei tietoisesti käytä type classeja julkisessa API:ssa
+\end{itemize}
+
+\section{Error handling}
+\begin{itemize}
+    \item Typed, lossless, error model even in the presence of async errors
+    \item Introduction and elimination of errors
+    \item Combination of errors (union)
+\end{itemize}
+
+\section{Environment}
+\begin{itemize}
+    \item Combining two environments (intersection)
+    \item Local environment elimination
+    \item Effect tracking
+\end{itemize}
+
+\section{Concurrency \& Interruption}
+
+\section{Layers}
+
+\section{Managed resources}
+
+\section{STM}
+
+\section{Similar techniques}
+\subsection{Tagless Final}
+\begin{itemize}
+    \item Omaksuttavuus (vaatii ymmärrystä higher kinded tyypeistä ja tyyppiluokista)
+    \item Ergonomia
+\end{itemize}
+
+\subsection{Monad transformers}
+\begin{itemize}
+    \item Performance
+    \item Omaksuttavuus (vaatii ymmärrystä tyyppiluokista, monadeista ja vaikka mistä)
+    \item Ergonomia (type inference)
+\end{itemize}
+
+\subsection{Free monad}
+\begin{itemize}
+    \item Composition
+    \item Performance ?
+    \item Omaksuttavuus (vaatii ymmärrystä natural transformationeista/tulkin kirjoittamisesta)
+\end{itemize}
+
+\input{sources/zio/basics}
+\input{sources/zio/provide-layer}

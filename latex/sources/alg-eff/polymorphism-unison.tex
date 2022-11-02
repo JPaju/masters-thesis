@@ -1,0 +1,21 @@
+\begin{algorithm}
+
+\begin{minted}{ocaml}
+map : (a -> {e} b) -> [a] -> {e} [b]
+map f = cases
+    head +: tail  -> f head +: map f tail
+    []            -> []
+
+nums  : [Nat]
+nums = [1, 2, 3, 4, 5]
+
+pure : [Nat]
+pure =  map (n -> n * 2) nums
+
+effectful : '{Exception Text} [Nat]
+effectful _ = map (n -> if n > 5 then raise "Nope" else n * 2) nums
+\end{minted}
+
+\caption{Effect polymorphism in Unison %
+\label{alg-eff:polymorphism-unison}}
+\end{algorithm}

@@ -1,0 +1,20 @@
+\begin{algorithm}
+\begin{minted}{scala}
+case class Person(age: Int, name: String)
+
+// Define type class
+trait Show[A]:
+  extension (a: A) def show: String
+
+// Define type class instance
+given Show[Person] with
+  extension (a: Person)
+    def show: String = s"${a.name} is ${a.age} years old"
+
+// Use the type class
+def showAll[A: Show](as: List[A]): List[String] =
+  as.map(a => a.show)
+\end{minted}
+
+\caption{Implicits could be used to encode type classes \label{scala:typeclasses}}
+\end{algorithm}
