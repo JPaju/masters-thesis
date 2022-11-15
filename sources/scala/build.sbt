@@ -19,6 +19,8 @@ ThisBuild / scalacOptions ++=
     "-Wconf:id=E029:error,msg=non-initialized:error,msg=spezialized:error,cat=unchecked:error",
   )
 
+javacOptions ++= Seq("-source", "17")
+
 lazy val root = project
   .in(file("."))
   .settings(
