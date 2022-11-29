@@ -1,4 +1,5 @@
 package fi.jpaju.thesis
+package scalalang
 
 trait A
 trait B

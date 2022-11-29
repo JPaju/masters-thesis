@@ -1,4 +1,5 @@
 package fi.jpaju.thesis
+package scalalang
 
 enum Maybe[+A]:
   case Just(a: A)

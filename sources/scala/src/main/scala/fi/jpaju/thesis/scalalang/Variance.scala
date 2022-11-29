@@ -1,4 +1,5 @@
 package fi.jpaju.thesis
+package scalalang
 
 object DeclarationSiteVariance:
   class Invariant[A]      // Invariance is the default

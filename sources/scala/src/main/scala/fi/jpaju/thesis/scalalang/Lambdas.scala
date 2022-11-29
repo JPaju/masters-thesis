@@ -1,4 +1,5 @@
 package fi.jpaju.thesis
+package scalalang
 
 val ns = List(1, 2, 3)
 

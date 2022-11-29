@@ -1,4 +1,5 @@
 package fi.jpaju.thesis
+package scalalang
 
 // Defined in the standard library
 def summon[A](using a: A): A = a
