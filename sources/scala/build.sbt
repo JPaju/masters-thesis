@@ -5,7 +5,7 @@ ThisBuild / watchTriggeredMessage := Watch.clearScreenOnTrigger
 
 fork := true
 
-ThisBuild / scalaVersion := "3.2.0"
+ThisBuild / scalaVersion := "3.2.1"
 
 ThisBuild / scalacOptions ++=
   Seq(
