@@ -1,0 +1,26 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+// Cause in ZIO also includes traces omitted here
+enum Cause[+E]:
+  case Empty
+  case Fail(value: E)
+  case Die(value: Throwable)
+  case Both(left: Cause[E], right: Cause[E])
+  case Then(left: Cause[E], right: Cause[E])
+  case Interrupt(fiberId: FiberId)
+
+val a = ZIO.dieMessage("A")
+val b = ZIO.fail("B").ensuring(ZIO.sleep(5.millis).timeout(1.milli))
+a.zipPar(b).cause.debug
+// Cause.Both(
+//   Cause.Die(java.lang.RuntimeException("A")),
+//   Cause.Then(
+//     Cause.Fail("B"),
+//     Cause.Interrupt(<FiberId of the interrupting fiber>),
+//   ),
+// )
+\end{minted}
+
+\caption{Cause data type captures the full cause of failures \label{zio:cause}}
+\end{algorithm}

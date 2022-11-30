@@ -1,0 +1,20 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+val readFile: IO[Throwable, Array[Byte]] =
+  ZIO.attempt(new FileInputStream("file.txt").readAllBytes())
+
+val allErrorsToDefects: IO[Nothing, Array[Byte]] = readFile.orDie
+
+val someErrorsToDefects: IO[FileNotFoundException, Array[Byte]] =
+  readFile.refineToOrDie[FileNotFoundException]
+
+val allDefectsToErrors: IO[Throwable, Array[Byte]] =
+  allErrorsToDefects.resurrect
+
+val someDefectsToFailure: IO[FileNotFoundException, Array[Byte]] =
+  allErrorsToDefects.unrefineTo[FileNotFoundException]
+\end{minted}
+
+\caption{ZIO operators for switching between errors and failures \label{zio:defect-handling}}
+\end{algorithm}

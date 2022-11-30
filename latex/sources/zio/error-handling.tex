@@ -1,0 +1,19 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+type Error = ErrorA | ErrorB | ErrorC
+
+val mayFail: IO[Error, Int] = ???
+
+val handled: IO[Nothing, Int] = mayFail.catchAll(e => ZIO.succeed(0))
+
+val someHandled: IO[Error, Int] =
+  mayFail.catchSome { case _: ErrorA => ZIO.succeed(34) }
+
+val folded: UIO[Int] = mayFail.fold(e => -1, n => n + 10)
+
+val withFallback: IO[Nothing, Int] = mayFail.orElse(ZIO.succeed(0))
+\end{minted}
+
+\caption{Basic error handling operators in ZIO \label{zio:error-handling-operators}}
+\end{algorithm}

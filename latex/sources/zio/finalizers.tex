@@ -1,0 +1,18 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+val finalizer = ZIO.succeed(println("Finalizer executed"))
+
+// The finalizer is executed once after each ZIO below is executed
+val success: UIO[Int]    = ZIO.succeed(1).ensuring(finalizer)
+val error: IO[Int, Int]  = ZIO.fail(42).ensuring(finalizer)
+val defect: UIO[Nothing] = ZIO.dieMessage("No").ensuring(finalizer)
+
+val interruption: UIO[Unit] = for
+  fiber <- ZIO.sleep(1.second).ensuring(finalizer).fork
+  _     <- fiber.interrupt // The finalizer is executed here
+yield ()
+\end{minted}
+
+\caption{Basic finalizer operator \inlinecode{ensuring} in ZIO \label{zio:finalizers}}
+\end{algorithm}
