@@ -112,6 +112,8 @@ Scala aims to blend functional and \acronym{OOP}{Object-oriented programming} pa
 
 \input{sources/scala/basics}
 
+\todo{Pitäisikö tuplet esitellä erikseen vai voiko lukijan olettaa tuntevan ne?}
+
 Due to Scala's object-oriented nature, every object is part of a type hierarchy. On top of the hierarchy is \inlinecode{Any}, which is the supertype of all other types. Below \inlinecode{Any} is \inlinecode{Matchable}, which marks type suitable for pattern matching. \inlinecode{Matchable} has two subtypes: \inlinecode{AnyVal}, which is a supertype for all value types, and \inlinecode{AnyRef}, which is a supertype for all reference types. \inlinecode{Null} is subtype of all reference types, except when \textit{explicit nulls} -feature is enabled and \inlinecode{Null} becomes subtype of \inlinecode{Any}. Scala also has a bottom type \inlinecode{Nothing}, that is subtype of every type. No values of type \inlinecode{Nothing} could ever exist at runtime so the type reflects the absence of value, for example in the case of infinite recursion, loop, or when the expression throws an exception. Diagram in Figure \ref{fig:scala-type-hierarchy}, demonstrates the type hierarchy.
 
 \begin{figure}
@@ -136,7 +138,7 @@ To avoid similar situation, mutable collections in Scala are invariant. Immutabl
 
 \input{sources/variance/mutable-covariance}
 
-Programming languages differ in the way the variance is defined. Languages like C\# and Scala define the variance with the parameterized type. In the other hand, language like Java define the variance only when using the parameterized type. The former is called \textit{declaration-site} variance, demonstrated in \refsource{declaration-site-variance} and the latter is called \textit{use-site} variance, demonstrated in \refsource{use-site-variance}. Approaches deviating from these exist, for example TypeScript does not have explicit variance notation at all, and relies on inferring the variance. Invariance is the default in Scala and does not require explicit denotation. Covariance is declared with a \inlinecode{+} sign before each type parameter. Since contravariance could be seen as the opposite of covariance, it is denoted with a \inlinecode{-} sign.
+Programming languages differ in the way the variance is defined. Languages like C\# and Scala define the variance with the parameterized type. In the other hand, language like Java define the variance only when using the parameterized type. The former is called \textit{declaration-site} variance, demonstrated in \refsource{declaration-site-variance} and the latter is called \textit{use-site} variance, demonstrated in \refsource{use-site-variance}. Approaches deviating from these exist, for example TypeScript tries to infer the variance, but has optional declaration-site annotations from version 4.7 onwards. Invariance is the default in Scala and does not require explicit denotation. Covariance is declared with a \inlinecode{+} sign before each type parameter. Since contravariance could be seen as the opposite of covariance, it is denoted with a \inlinecode{-} sign.
 
 \input{sources/variance/declaration-site-variance}
 
