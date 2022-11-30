@@ -1,21 +1,13 @@
 \begin{algorithm}
 
-\begin{comment}
-\begin{minted}{haskell}
-name :: IO ()
-name =
-  putStrLn "What's your name?" >>= \_ ->
-  getLine >>= \name -> 
-  putStrLn ("Nice to meet you " ++ name)
-\end{minted}
-\end{comment}
-
-
 \begin{minted}{haskell}
 suits = ["Club", "Heart", "Diamond", "Spade"]
 ranks = [2..14]
 
+type Card = (String, Int)
+
 -- [("Club", 2), ("Club", 3), ... ,("Spade", 13), ("Spade", 14)]
+deck :: [Card]
 deck =
   suits >>= \suit ->
   ranks >>= \rank ->

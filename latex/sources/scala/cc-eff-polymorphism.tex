@@ -1,37 +1,31 @@
 \begin{algorithm}
 \begin{minted}{scala}
-// Compiles with dotty 3.2.0-RC1-bin-SNAPSHOT
-
-// '{f}' Means that mapCC captures all capabilities of function 'f'
-// This makes mapCC effect polymorphic since the resulting
-// capabilities are solely determined by capabilities of 'f'
-extension [A](xs: List[A])
-  def mapCC[B](f: A => B): {f} List[B] =
-    xs match
-      case hd :: tl => f(hd) :: tl.mapCC(f)
+// Define effect polymorphic List.map function
+// Captured capabilities are those captured by the function 'f'
+// They are annotated in the return type as '{f}'
+extension [A](as: List[A])
+  def map[B](f: A => B): {f} List[B] =
+    as match
+      case hd :: tl => f(hd) :: tl.map(f)
       case Nil     => Nil
 
-// Class is marked as capability by annotating it
-@annotation.capability class Console:
-  def printLine(x: Any): Unit = println(x)
+// Define a logger capability
+@capability class Logger:
+  def log(msg: String): Unit = println(msg)
 
-// Required capabilites are declaired as constructor parameters
-class Example(using val cn: Console):
-  val numbers: List[Int] = List(1, 2, 3)
-  
-  // When function passed to mapCC does not capture capabilities
-  // the resulting value does not capture anything
-  val doubled: List[Int] = numbers.mapCC(n => n * 2)
+// Define a function that uses the logger capability
+def doSomething(ns: List[Int], logger: Logger) =
 
-  // Here the function passed to mapCC captures console capability
-  // thus the resulting value captures the same capability
-  // indicated in the type as '{console}'
-  val printed: {console} List[Int] = numbers.mapCC { n =>
-    console.printLine(n)
-    n * 2
-  }
+  // Mapping function is pure, thus capture set is empty
+  val pureExpression: {} List[Int] = ns.map(n => n * 2)
+
+  // Closes over logger, and that is reflected in the capture set
+  val capturesLogger: {logger} List[Int] = ns.map{ n =>
+      logger.log("multiplying " + n)
+      n * 2
+    }
 \end{minted}
 
-\caption{Effect polymorphism with capture checking %
+\caption{Effect/capability polymorphism with capture checking in Scala 3%
 \label{scala:cc-eff-polymorphism}}
 \end{algorithm}

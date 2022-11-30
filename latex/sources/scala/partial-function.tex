@@ -1,0 +1,12 @@
+\begin{algorithm}
+\begin{minted}{scala}
+val someEvensMultipliedByTen: PartialFunction[Option[Int], Int] = {
+  case Some(n) if n % 2 == 0 => n * 10
+}
+
+val opts  = List(None, Some(2), None, Some(3), Some(4))
+val somes = opts.collect(someEvensMultiplied) // List(20, 40)
+\end{minted}
+
+\caption{Partial functions in Scala \label{scala:partial-function}}
+\end{algorithm}

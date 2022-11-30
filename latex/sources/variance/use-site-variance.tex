@@ -1,0 +1,19 @@
+\begin{algorithm}
+
+\begin{minted}{java}
+interface Supertype {}
+interface Subtype extends Supertype {}
+
+void invariant(List<Supertype> list) {
+    /* Get and set list values */
+}
+void covariant(List<? extends Supertype> list) {
+    /* Only get list values */
+}
+void contravariant(List<? super Subtype> list) {
+    /* Only set list values */
+}
+\end{minted}
+
+\caption{Java has use-site variance, where the desired variance is declared when using the parameterized type \label{use-site-variance}}
+\end{algorithm}

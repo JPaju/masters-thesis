@@ -1,20 +1,16 @@
 \begin{algorithm}
 \begin{minted}{scala}
-case class Person(age: Int, name: String)
+// Defined in the standard library
+def summon[A](using a: A): A = a
 
-// Define type class
-trait Show[A]:
-  extension (a: A) def show: String
+// Defines an implicit value of type Int
+given Int = 3
 
-// Define type class instance
-given Show[Person] with
-  extension (a: Person)
-    def show: String = s"${a.name} is ${a.age} years old"
+val three = summon[Int] // Finds the value 3 defined above
 
-// Use the type class
-def showAll[A: Show](as: List[A]): List[String] =
-  as.map(a => a.show)
+def implicitSum(a: Int)(using b: Int): Int =  a + b
+val five = implicitSum(2) /*(compiler automatically inserts 3)*/
 \end{minted}
 
-\caption{Implicits could be used to encode type classes \label{scala:typeclasses}}
+\caption{Implicit resolution in Scala 3 \label{scala:implicits}}
 \end{algorithm}

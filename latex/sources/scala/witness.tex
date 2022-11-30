@@ -1,0 +1,17 @@
+\begin{algorithm}
+\begin{minted}{scala}
+enum Maybe[+A]:
+  case Just(a: A)
+  case Nothing
+
+  def flatten[B](using evidence: A <:< Maybe[B]): Maybe[B] =
+    this match
+      case Just(a) => evidence(a)
+      case Nothing => Nothing
+
+Maybe.Just(Maybe.Just(1)).flatten // Compiles
+Maybe.Just(1).flatten // Error: Cannot prove that Int <:< Maybe[B]
+\end{minted}
+
+\caption{Scala compiler witnesses sub type relationship by providing implicit evidence \label{scala:witness}}
+\end{algorithm}

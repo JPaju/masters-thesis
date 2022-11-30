@@ -7,7 +7,7 @@ def optionToEither[A]: Option[A] => Either[Unit, A] = {
 }
 
 def eitherToOption[A]: Either[Unit, A] => Option[A] = {
-  case Left(())  => None
+  case Left(()) => None
   case Right(a) => Some(a)
 }
 \end{minted}

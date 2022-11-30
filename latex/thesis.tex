@@ -45,7 +45,6 @@
 
 \tableofcontents % mandatory
 
-\input{acronyms}
 % \listoffigures % if you want a list of figures
 % \listoftables % if you want a list of tables
 \listofacronyms % if you want a list of acronyms
@@ -63,9 +62,9 @@
 % Minted 
 \AtBeginEnvironment{algorithm}{\singlespacing}
 \setmintedinline{breaklines}
-\newcommand{\inlinecode}[1]{\mintinline{text}{#1}}
-\newcommand{\inlinescala}[1]{\mintinline{scala}{#1}}
-\newcommand{\inlinehaskell}[1]{\mintinline{haskell}{#1}}
+\newcommand{\inlinecode}[1]{\mintinline[breaklines=false]{text}{#1}}
+\newcommand{\inlinescala}[1]{\mintinline[breaklines=false]{scala}{#1}}
+\newcommand{\inlinehaskell}[1]{\mintinline[breaklines=false]{haskell}{#1}}
 
 % Citing
 \newcommand{\titlecite}[1]{\citetitle{#1}~\cite{#1}}

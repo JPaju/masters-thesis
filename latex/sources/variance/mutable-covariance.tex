@@ -1,0 +1,10 @@
+\begin{algorithm}
+
+\begin{minted}{java}
+String[] a = new String[1];	
+Object[] b = a; // String is a subtype of Object, so this is legal
+b[0] = 1; // Runtime exception since cannot add Integer to String[]
+\end{minted}
+
+\caption{Covariance in mutable types, like Java primitive array, is problematic \label{mutable-covariance}}
+\end{algorithm}
