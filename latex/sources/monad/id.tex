@@ -9,6 +9,6 @@ given Monad[Id] with
     def flatMap[B](f: A => Id[B]): Id[B] = f(a)
 \end{minted}
 
-\caption{Identity monad in Scala %
+\caption{Identity monad in Scala. %
 \label{monad:id}}
 \end{algorithm}

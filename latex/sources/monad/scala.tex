@@ -6,6 +6,6 @@ trait Monad[F[_]] extends Functor[F]:
   extension [A](fa: F[A]) def flatMap[B](f: A => F[B]): F[B]
 \end{minted}
 
-\caption{Monad type class in Scala 3 %
+\caption{Monad type class in Scala 3. %
 \label{monad:scala}}
 \end{algorithm}

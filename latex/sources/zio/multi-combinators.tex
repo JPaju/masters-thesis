@@ -13,5 +13,5 @@ val combined: UIO[Int] =
   ZIO.mergeAll(ids.map(findById(_)))(0)(combineResults(_, _))
 \end{minted}
 
-\caption{Common combinators for multiple values in ZIO \label{zio:multi-combinators}}
+\caption{Common combinators for multiple values in ZIO. \label{zio:multi-combinators}}
 \end{algorithm}

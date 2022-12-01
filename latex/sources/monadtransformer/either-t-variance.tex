@@ -8,6 +8,6 @@ case class EitherT[F[_], E, A](effect: F[Either[E, A]]):
     this.asInstanceOf[EitherT[F, E1, A]]
 \end{minted}
 
-\caption{EitherT leftWiden method %
+\caption{EitherT leftWiden method. %
 \label{monadtransformer:either-t-variance}}
 \end{algorithm}

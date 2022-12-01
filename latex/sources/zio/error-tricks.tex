@@ -11,5 +11,5 @@ trait ZIO[-R, +E, +A]:
   def uncause[E1 >: E](using A <:< Cause[E1]): ZIO[R, E1, Unit]
 \end{minted}
 
-\caption{Operators for swapping values between error and success channels \label{zio:error-tricks}}
+\caption{Operators for swapping values between error and success channels. \label{zio:error-tricks}}
 \end{algorithm}

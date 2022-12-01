@@ -15,5 +15,5 @@ val folded: UIO[Int] = mayFail.fold(e => -1, n => n + 10)
 val withFallback: IO[Nothing, Int] = mayFail.orElse(ZIO.succeed(0))
 \end{minted}
 
-\caption{Basic error handling operators in ZIO \label{zio:error-handling-operators}}
+\caption{Basic error handling operators in ZIO. \label{zio:error-handling-operators}}
 \end{algorithm}
