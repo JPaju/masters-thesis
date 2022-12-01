@@ -4,7 +4,7 @@ package scalalang
 import java.io.*
 
 object Basics:
-  trait Foo // Define an interface (line comment starts with //)
+  trait Foo // Define an interface
   class Bar extends Foo // Define a class inheriting from Foo
 
   // Define variables/constants
@@ -12,19 +12,18 @@ object Basics:
   val immutableBar    = Bar() // Inferred type is Bar
   lazy val lazyPlus   = 1 + 1 // Computed lazily and cached
 
-  // Type parameter here is Int
+  // Type argument here is Int
   val genericType: List[Int] = List(1, 2, 3)
 
-  // The type parameters are declared between '[' and ']'
+  // Type parameters are declared between '[' and ']'
   def genericMethod[A](a: A): A = a
 
-  // Generic type can be constrained to a subtype with '<:'
-  def lowerTypeBound[A <: Foo](a: A): String = ???
-
-  // Generic type can be constrained to a supertype with '>:'
-  def upperTypeBound[A >: Bar](a: A): String = ???
+  // Type parameter constraints:
+  // 'A' must be supertype of 'Bar' and  'B' must be subtype of 'Foo'
+  def typeBounds[A >: Bar, B <: Foo](a: A): B = ???
 
   // ??? can replace any expression, because Nothing is bottom type
+  // Defined in the standard library
   def `???` : Nothing = throw new NotImplementedError
 
   // The parameter is evaluated every time it is used (2 times here)
