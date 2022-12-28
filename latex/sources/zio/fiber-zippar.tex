@@ -1,0 +1,17 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+// Actual implementation in ZIO is considerably more complex due to
+// environment, errors, race conditions, and other concerns
+def zipPar[A, B](left: UIO[A], right: UIO[B]): UIO[(A, B)] =
+  for
+    fiber1 <- left.fork
+    fiber2 <- right.fork
+    a      <- fiber1.join
+    b      <- fiber2.join
+  yield (a, b)
+
+\end{minted}
+
+\caption{\inlinecode{zipPar} implementation with fibers in ZIO. \label{zio:fiber-zippar}}
+\end{algorithm}

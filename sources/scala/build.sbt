@@ -1,7 +1,8 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-ThisBuild / watchBeforeCommand    := Watch.clearScreen
-ThisBuild / watchTriggeredMessage := Watch.clearScreenOnTrigger
+ThisBuild / watchBeforeCommand           := Watch.clearScreen
+ThisBuild / watchTriggeredMessage        := Watch.clearScreenOnTrigger
+ThisBuild / watchForceTriggerOnAnyChange := true
 
 fork := true
 
@@ -21,6 +22,8 @@ ThisBuild / scalacOptions ++=
 
 javacOptions ++= Seq("-source", "17")
 
+val zioVersion = "2.0.5"
+
 lazy val root = project
   .in(file("."))
   .settings(
@@ -29,6 +32,6 @@ lazy val root = project
   )
   .settings(
     libraryDependencies ++= Seq(
-      "dev.zio" %% "zio" % "2.0.3"
+      "dev.zio" %% "zio" % zioVersion
     )
   )

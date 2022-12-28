@@ -1,0 +1,19 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+val work = ZIO.sleep(1.second) *> ZIO.debug("Work completed")
+val parentZIO = for
+  childFiber <- work.fork
+  _          <- ZIO.debug("Parent forked child fiber")
+  _          <- childFiber.join
+  _          <- ZIO.debug("Parent joined child fiber")
+yield ()
+
+// When executed prints:
+// Parent forked child fiber
+// Work completed
+// Parent joined child fiber
+\end{minted}
+
+\caption{Forking and joining a fiber in ZIO. \label{zio:forking}}
+\end{algorithm}

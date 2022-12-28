@@ -32,8 +32,16 @@
 %   - Takes inspiration from effect systems, algebraic effects and brings them into the world of monadic effects?
 %   - Maybe the absolute best (ergonomics & teachability) vs alg eff, but best that is currently available in mainstream lanuage  for production applications
 %   - Interesting to see how Unison will do
+% Hyvää pohdintaa ZIO:n heikkouksista:
+%   - https://www.reddit.com/r/scala/comments/szmg95/error_tracking_is_commercially_worthless/
 
 
 % ----------- Something about capture checking -----------
 % "Indeed, many designers of programming languages with support for effect systems agree that programmers should ideally not be confronted with explicit effect quantifiers", Scoped Capabilities for Polymorphic Effects, p.2
 % The idea of propagating capabilities inwards is similar to abilities in Frank and Unison
+
+
+% https://gist.github.com/djspiewak/741c60cff4959feb5272d88306595771 (Monads are Fundamental, Syntax is the Problem)
+% Monads are a fundamental concept in modeling effectful computations as they define what sequential (the most natural and mandatory way of combining instructions) composition means
+% The monadic syntax on the other hand might not be the solution for large scale adoption. Other library or language-level techniques like CPS-transformations, compiler/language macros and libraries utilizing these might make programming with effects attractive to masses.
+% zio-direct, dotty-cps-async, Java Loom

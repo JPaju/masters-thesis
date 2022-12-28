@@ -1,6 +1,5 @@
 package fi.jpaju.thesis.ziostuff
-
-import zio.IsSubtypeOfOutput
+package error_tricks
 
 trait ZIO[-R, +E, +A]:
   def flip: ZIO[R, A, E]
