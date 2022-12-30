@@ -1,4 +1,5 @@
 package fi.jpaju.thesis.ziostuff
+package erroraccumulation
 
 import zio.*
 

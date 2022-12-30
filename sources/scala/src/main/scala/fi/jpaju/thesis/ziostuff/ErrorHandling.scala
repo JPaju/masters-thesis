@@ -2,6 +2,8 @@ package fi.jpaju.thesis.ziostuff
 
 import zio.*
 
+import erroraccumulation.*
+
 type Error = ErrorA | ErrorB | ErrorC
 
 val mayFail: IO[Error, Int] = ???

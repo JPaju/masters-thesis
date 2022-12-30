@@ -1,4 +1,5 @@
 package fi.jpaju.thesis.ziostuff
+package parallercombinators
 
 import zio.*
 
@@ -11,13 +12,10 @@ val slow: IO[Nothing, Int] = work(3.seconds) *> ZIO.succeed(34)
 // 'slow' is interrupted after 50ms when 'fast' fails
 val successInterrupted: IO[String, (Int, Int)] =
   fast.zipPar(slow)
-  // zipPar(fast, slow)
 
 // 'slow' is not interrupted because 'fast' is made infallible
 val successNotInterrupted: IO[Nothing, (Either[String, Int], Int)] =
-  // fast.either.zipPar(slow)
-  zipPar(fast.either, slow)
+  fast.either.zipPar(slow)
 
 object ParallelCombinators extends ZIOAppDefault:
   val run = successInterrupted.cause.debug("Cause")
-  // val run = successNotInterrupted.timed.map(_._1.toMillis.toString + "ms").debug("Took")
