@@ -1,0 +1,16 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+// Can be thought of as: Map(Int -> 42, String -> "foo")
+val environment: ZEnvironment[String & Int] =
+  ZEnvironment.empty
+    .add[Int](42)       // Explicit types here are not required
+    .add[String]("foo") // but they are added for clarity
+
+// Values from the environment can be accessed by their type
+val int    = environment.get[Int]    // 42
+val string = environment.get[String] // "foo"
+\end{minted}
+
+\caption{\inlinecode{ZEnvironment} contains the required environment for ZIO workflow. \label{zio:zenvironment}}
+\end{algorithm}

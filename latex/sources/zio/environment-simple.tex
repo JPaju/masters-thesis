@@ -1,0 +1,17 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+case class Configuration(url: String)
+
+val useConfiguration: ZIO[Configuration, Nothing, Result] =
+  ZIO.serviceWithZIO[Configuration](conf => makeRequest(conf.url))
+
+val configurationLayer: ZLayer[Any, Nothing, Configuration] =
+  ZLayer.succeed(Configuration(url = "https://example.com"))
+
+val configurationProvided: ZIO[Any, Nothing, Result] =
+  configurationLayer(useConfiguration)
+\end{minted}
+
+\caption{Static data can be provided to computations with the ZIO environment. \label{zio:environment-simple}}
+\end{algorithm}

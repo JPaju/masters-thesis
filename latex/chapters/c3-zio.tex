@@ -13,7 +13,7 @@ ZIO focuses heavily to statically verify the correctness of the program, most no
     \item \inlinescala{type URIO[R, A] = ZIO[R, Nothing, A]} has requirement \inlinescala{R} and cannot fail
 \end{itemize}
 
-Since ZIO is a monadic effect system, all computations are values which can be transformed with functions. This makes it easy to implement combinators for modifying ZIO-values, thus changing the behavior of the described computation. ZIO provides numerous built-in combinators for error handling, context management, dependency injection, concurrency, retrying and repeating, scheduling, memoizing, resource handling, and more. It's also easy to implement complex custom combinators in terms of existing ones.
+Since ZIO is a monadic effect system, all computations are values which can be transformed with functions. This makes it easy to implement combinators for modifying ZIO-values, thus changing the behavior of the described computation. ZIO provides numerous built-in combinators for error handling, context management, dependency injection, concurrency, retrying and repeating, scheduling, memoizing, resource management, and more. It's also easy to implement complex custom combinators in terms of existing ones.
 
 ZIO's approach to functional programming is pragmatic, and the library aims to be pragmatic and easy to learn, even for programmers without prior theoretical knowledge about functional programming concepts. Even though the library has strong theoretical foundations in functional programming, the aim is not to require the programmer to comprehend these concepts or surface them in the public API more than required. ZIO constructors use lazy, by-name parameters to delay executing unintentional side effects until the ZIO effect is executed. Using ZIO does not require knowledge of concepts like type classes or monad transformers, even though the former is utilized heavily internally.
 
@@ -48,7 +48,7 @@ When required to combine more than two ZIOs togheter, for example in a loop-like
 
 
 \section{Error handling} \label{zio:error-handling}
-Proper error handling is essential in any non-trivial application, like mentioned in section \ref{effects:exceptions}. Failures in ZIO are described in a referentially transparent way by returning values that represent the error, instead of throwing exceptions. Like other monads capable of encoding exceptions, ZIO is stops execution of the success channel on first encountered error, until the error is handled with one of the error handling combinators. Much of the errors are tracked in types, making it possible to have static proof that all declared errors are handled. ZIO advocates its error model, which is promised not to lose any errors, even asynchronous, parallel, caused by interruptions, or exceptions thrown by finalizers\todo{Forward-reference resource handling?}.
+Proper error handling is essential in any non-trivial application, like mentioned in section \ref{effects:exceptions}. Failures in ZIO are described in a referentially transparent way by returning values that represent the error, instead of throwing exceptions. Like other monads capable of encoding exceptions, ZIO is stops execution of the success channel on first encountered error, until the error is handled with one of the error handling combinators. Much of the errors are tracked in types, making it possible to have static proof that all declared errors are handled. ZIO advocates its error model, which is promised not to lose any errors, even asynchronous, parallel, caused by interruptions, or exceptions thrown by finalizers.
 
 ZIO divides failures into three categories: errors, defects and fatal errors. Fatal errors are thrown by the runtime platform (usually JVM), such as \inlinecode{OutOfMemoryError}, which results in immediate termination of the application, and thus are not very interesting in this context. The two remaining error types describe failures that are possible for the programmer to interact with. Errors are represented as the \inlinecode{E} parameter in ZIO, and are tracked in the types. \inlinecode{Nothing} has a cardinality of zero, which proves that ZIO with \inlinecode{Nothing} in the error channel cannot produce a failing ZIO, thus is infallible. Defects are not reflected in the types, and practically any ZIO can produce a defect when executed. The type of defect is always Java's \inlinecode{Throwable}.
 
@@ -68,7 +68,7 @@ There are many similar operators for working with the values in the error channe
 
 \input{sources/zio/error-handling}
 
-In addition to \inlinecode{try-catch} like semantics described above, \inlinecode{try-finally} is a common pattern in imperative programming. Regardless whether the code in the \inlinecode{try} throw exceptions or not, the code in \inlinecode{finally} block guaranteed to be executed. The underlying idea is that there is finalizer(s) that need to be run after a certain block of code is executed. ZIO also supports this pattern with several operators that are guaranteed to execute the finalizers even in the presence of parallelism, asynchrony, concurrency, interruption, errors, and defects. \refsource{zio:finalizers} demonstrates the basic finalizing operator \inlinecode{ensuring} that executes the specified finalizer regardless of any kind of failure or interruption. Other, higher level, finalizer operators are discussed more thoroughly in section \ref{zio:resource-handling} about resource handling.
+In addition to \inlinecode{try-catch} like semantics described above, \inlinecode{try-finally} is a common pattern in imperative programming. Regardless whether the code in the \inlinecode{try} throw exceptions or not, the code in \inlinecode{finally} block guaranteed to be executed. The underlying idea is that there is finalizer(s) that need to be run after a certain block of code is executed. ZIO also supports this pattern with several operators that are guaranteed to execute the finalizers even in the presence of parallelism, asynchrony, concurrency, interruption, errors, and defects. \refsource{zio:finalizers} demonstrates the basic finalizing operator \inlinecode{ensuring} that executes the specified finalizer regardless of any kind of failure or interruption. Other, higher level, operators for \inlinecode{try-finally} like semantics are discussed more thoroughly in section \ref{zio:resource-management} about resource management.
 
 \input{sources/zio/finalizers}
 
@@ -91,24 +91,91 @@ Instead of immediately retrying, a common way is to schedule the retries with a 
 \input{sources/zio/schedule}
 
 
+
 \section{Environment}
+Arguably the most distinguishing feature about ZIO is its environment or \inlinecode{R} type. The possibility to express environmental/contextual requirements of a computation, plays a big part in the fact that ZIO can encode several effects in one monad, thus mostly eliminating the need for monad transformers. ZIO environment is similar to a reader monad, but has couple of key differences. Unlike reader monad whose only effect is to provide read-only access to some context, the ZIO environment is just a one of the effects that can be expressed with ZIO. Also the environment type composes naturally when combining multiple ZIO values. The environment type in ZIO can be changed from one type to another, similar to indexed reader monads~\cite{monad-factory}. Its also possible to locally both introduce environmental requirements and eliminate some or all environmental requirements.
 
-% Contarvariant intersection phantom type ('Any' as top/identity type)
+Recall that a mental model of a \inlinecode{ZIO[R, E, A]} is function \inlinecode{R => Either[E, A]}.
+Before a ZIO can be executed the required environment must be provided, just like function must be provided with the parameters before it can be evaluated. A ZIO workflow, that has no environmental requirements, has \inlinecode{Any} as its environment type. Function \inlinecode{f: Any => Either[E, A]} function accepts \textit{anything} as its argument and can be called, for example, by providing the unit value \inlinecode{f(())}, number \inlinecode{f(42)}, or string \inlinecode{f("foo")} as its argument. The analogy applies to ZIO, where \inlinecode{ZIO[Any, E, A]} is ready to be executed without providing any environment.
 
-% Similar to extensible effects/ReaderT -pattern:
-% https://喵.世界/2022/02/03/readert-is-extensible-effects/
+\input{sources/zio/environment-accumulation}
 
-% This is achieved by taking advantage of top type \inlinecode{Any} in Scala's type hierarchy, and variance associated with it, see Section \ref{background:scala}. \inlinecode{Any} in \inlinecode{R} parameter indicates that the computation could be run by providing \textit{any} value, e.g. the unit value, thus marking its requirements met. \todo{Alleviivaa että koska R on contravariant, ei Any-tyypillä ole yhtään super typeä}
+When combining ZIO values together, the resulting ZIO naturally has environmental requirements from \textbf{all} combined ZIOs. Similarly to error accumulation, the composition should be commutative and have \inlinecode{Any} as its identity element. Scala 3 intersection types have these properties and thus expresses the composition accurately. \refsource{zio:environment-accumulation} demonstrates the accumulation of environment types when composing ZIO values.
 
+Basic operations for interacting with the environment are adding requirements to it and eliminating all or part of the requirements. It is also possible to translate one environmental requirement to another. A value from the environment can be accessed with \inlinecode{ZIO.service} function, which is really similar to the \inlinecode{ask} function in Reader monad with the exception that \inlinecode{ZIO.service} can return a part of the environment instead of the entire environment. \refsource{zio:environment-access} demonstrates different operators for accessing the environment, which add corresponding environmental requirements.
 
-\subsection{Dependency injection}
-Idiomatic ZIO application is constructed by defining services as interfaces (or traits in Scala), composing other services in terms of these interfaces, and providing implementations of interfaces via dependency injection before the program is executed. Logic within services ought to implemented with pure functions and immutable data. This embraces the essence of Scala, which is to use object-oriented programming for modularity and functional programming for logic.
-% \input{sources/zio/provide-layer}
-% \subsection{Service pattern}
+\input{sources/zio/environment-access}
 
 
-\subsection{Resource handling} \label{zio:resource-handling}
-% Scope
+\subsection{Zlayer}
+Environmental requirements in ZIO are provided in the form of a purely functional data type called \inlinecode{ZLayer}. \inlinecode{ZLayer[RIn, E, ROut]} has same three type parameters as ZIO itself, and thus is capable of expressing effectful, asynchronous, and possibly failing construction of requirements. The \inlinecode{RIn} parameter in \inlinecode{ZLayer} represents dependencies that are required in order to construct value of type \inlinecode{ROut}. These dependencies between layers form a graph of dependencies, like demonstrated in \refsource{zio:zlayer-graph}.
+
+\input{sources/zio/zlayer-graph}
+
+Environment for a ZIO workflow is provided with operators such as \inlinecode{provide} (provide all requirements), \inlinecode{provideSome} (provide a part of requirements), and \inlinecode{provideLayer} (convert existing requirements into other requirements), that take \inlinecode{ZLayer}(s) as their argument. Also the \inlinecode{apply} method in \inlinecode{ZLayer} can be used to eliminate requirements from a ZIO workflow. ZIO can resolve the dependency graph with compiler macros, for example in \inlinecode{ZIO.provide} and \inlinecode{ZLayer.make} functions, and raise a compilation error if all required dependencies are not provided. Different ways of providing layers is demonstrated in \refsource{zio:zlayer-provide}.
+
+\input{sources/zio/zlayer-provide}
+
+\inlinecode{ZLayer}s along with ZIO environment are the basis of dependency injection in ZIO. Dependency injection in ZIO is resolved statically at compile time, so program with missing dependencies won't compile. Although there are several conventions and patterns related to dependency injection in ZIO programs, they are not discussed in more detail in this thesis.
+
+
+\subsection{ZEnvironment}
+Example in \refsource{zio:environment-accumulation} had ZIO value \inlinecode{composed} that has \inlinescala{String & Int} as the environment type. It is not possible for the type to exists at runtime, since there is no type that is both \inlinecode{String} and \inlinecode{Int}, so the type is only sensible at compile time. These kind of types that only exist at compile time are sometimes called \textit{phantom types}~\cite{fun-phantom-types}.
+
+The \inlinecode{R} type parameter in ZIO is a phantom type, and therefore represents the required types only at compile time. However, every type present in the environment type intersection must have a corresponding value at runtime. This is achieved with a data type called \inlinecode{ZEnvironment[R]}, which is can be seen as a map associating every type in the environment type intersection to a value, as demonstrated in \refsource{zio:zenvironment}.
+
+\input{sources/zio/zenvironment}
+
+With this knowledge, the mental model of ZIO can be updated to be \inlinecode{ZEnvironment[R] => Either[E, A]}. Since \inlinecode{ZEnvironment} is a low-level data type used internally to represent the environmental requirements of ZIO, it's not advised to use it directly, but instead use higher-level operators and data types such as \inlinecode{ZLayer}.
+
+
+\subsection{Use cases}
+The ZIO environment can be used in many ways. In addition to providing read-only data to computations like reader monad, it can be utilized in other interesting ways as well. It can describe mutable state, safe resource management (discussed more in Section \ref{zio:resource-management}), or dependency-injection. One could also use environmental requirement as a marker that certain ZIO computation must be run in a specific context. Another common use-case is to define combinators that translate a certain environmental requirement into another.
+
+Probably the most basic use-case is to provide some static data/context, which the computation can use as it wishes. Example of such data is configuration data in a web application, possibly containing a URL for performing http requests. This is demonstrated in \refsource{zio:environment-simple}.
+
+\input{sources/zio/environment-simple}
+
+Another use case is to encode mutable state in the environment, similar to monad transformer for \inlinecode{State} monad. This is achieved with data type describing mutable references evaluated in the ZIO monad, such as \inlinecode{Ref} or \inlinecode{ZState} which is purposefully built for this use case. State can be accessed with \inlinecode{ZIO.getState} function, which also adds a state requirement to the environment. State requirement can be eliminated using the \inlinescala{ZIO.stateful} operator by providing the initial state. \refsource{zio:state} demonstrates the usage of these operators in stateful computation. A nice byproduct of encoding state in the ZIO environment, is that the environment can carry several different states at the same time, as long as the states are of different types.
+
+\input{sources/zio/state}
+
+Environmental requirements can be converted from one type to another by eliminating one requirement and adding a new one. \refsource{zio:user-session} demonstrates one such situation. In that example \inlinecode{businessLogic} requires a \inlinecode{UserSession} from the environment. There is a \inlinecode{UserService} that can validate a token (\inlinecode{String} in this case) and succeed with \inlinecode{UserSession}, or fail validation with \inlinecode{TokenError}. For example, in the context of a web application, a token could be extracted from the http request. The helper function \inlinecode{UserService.withSessionFromToken} takes two parameters: a token and a ZIO computation that requires \inlinecode{UserSession} from the environment, and returns a ZIO computation that requires \inlinecode{UserService} from the environment, which will be used to validate the token. If the validation is successful a \inlinecode{UserSession} is provided to the computation. If validating the token fails, it fails the whole computation with \inlinecode{TokenError} and the computation received as a parameter will not be executed. The possibility that validating the token might fail can be observed from the fact that  \inlinecode{TokenError} is added to the error type of the returned ZIO computation.
+
+\input{sources/zio/user-session}
+
+The power of the environment type comes from the fact that it supports many different overlapping use cases. For example, configuration, state, and sessions can coexist in the environment without interfering with each other. The environment can be provided locally to a specific computation or globally to the entire program.
+
+
+\subsection{Similarity to algebraic effects}
+It may not be immediately obvious how ZIO is similar to algebraic effects and handlers.
+However, if we consider that each type in the environment intersection represents a specific effect, adding or interacting with environmental requirements represents an effectful operation, and removing environmental requirement with \inlinecode{ZLayer} represents handling an effect, the similarity is imminent. 
+\refsource{zio:zlayer-eff-handler} 
+
+Like handlers in algebraic effects, \inlinecode{ZLayer}s can handle (or discharge) the effect by removing it altogether, or it can translate one effect into another. Similar to handlers in algebraic effects, \inlinecode{ZLayer}s commonly form a graph of dependencies between other \inlinecode{ZLayer}s. ZIO environment composes in similar way as effects in language that natively supports algebraic effects and handlers, such as Unison.
+
+With \inlinecode{ZLayer}s it is possible to define polymorphic handler, which only handles a subset of all effects in a specific expression. In practice this means that a \inlinecode{ZLayer} eliminates only a part of the environment, while leaving the rest in place. \refsource{zio:zlayer-eff-handler} demonstrates the mentioned similarity and polymorphic handlers.
+
+\input{sources/zio/zlayer-eff-handler}
+
+Effect polymorphism (demonstrated in Listings \ref{scala:cc-eff-polymorphism}, \ref{alg-eff:polymorphism-unison}, and \ref{alg-eff:polymorphism-koka}) is limited since every ZIO computation is evaluated in monadic context, however. Also handlers in ZIO are not as expressive, since they do not receive a continuation to the rest of the program like algebraic effects handlers.
+
+
+\section{Resource management} \label{zio:resource-management}
+At a high level, resource management consists of three parts: acquiring resources, using resources and releasing resources after they are used and no longer needed. Countless things can be viewed as resources that need to be acquired and released: concurrency or database locks, allocated memory, open file handles or network sockets, connections from a connection pool, or spawned processes/threads. Even a database transaction is special kind of resource where releasing it either commits the transaction or rolls it back.
+
+The important part is that once a resource is acquired, it must be released, even if using the resource raises an exception or fails in any other way. This behavior is can be described with contextual data type that is added to the environment when the resources are acquired, and stays in the environment as long as there are resources that need to be released. A consequence of this is that acquired resources are visible in the type signature, and the compiler is able to help in making sure that acquired resources are actually released.
+
+Safe resource management in ZIO relies on information threaded through computations in the ZIO environment. In ZIO, the data type describing lifetime of resources is called \inlinecode{Scope}. In principle, a \inlinecode{Scope} is very simple and has only two operations: one to add a finalizer that is executed when the scope is closed, and one to actually close the scope. Computation that acquires a resource, requires that a \inlinecode{Scope} is in the environment. After the resource is acquired, a finalizer for releasing the resource is added to the scope. Before the ZIO is executed, the \inlinecode{Scope} must be provided. The provided \inlinecode{Scope} determines how long the resource is usable and when it is released. 
+
+To create a resource, ZIO has \inlinecode{acquireRelease} constructor and several variants for it. Like the name suggests, these constructors take two ZIO computations as their parameter: one to acquire the resource and one to release it. They return a ZIO computation that succeeds with the resource, and have added \inlinecode{Scope} to the environment. In order to determine the extent of a \inlinecode{Scope} and remove it from the environment, ZIO provides a operator called \inlinecode{scoped}. It takes a ZIO computation with requirement to scope as a argument, provides the scope, runs the computation with the scope and finally closes the scope. Several resourceful ZIOs could be interpreted in a different ways depending how the \inlinecode{Scope} is provided, which changes the order of acquire and release, in other words the lifetime of the resource. \refsource{zio:scope} demonstrates usage of these operators, and how scoping affects the order of acquiring and releasing resources.
+
+\input{sources/zio/scope}
+
+If multiple resources are acquired, they are released in the reverse order. By default releasing resources happens sequentially, but \inlinecode{Scope} also enables to run finalizers in parallel if configured so. 
+When using \inlinecode{Scope} with \inlinecode{ZIO.scoped}, finalizers are guaranteed to be executed even when error/defect is encountered, or when the workflow is interrupted.
+
+Traditionally resource management is implemented with \inlinecode{try-finally} statement, where the resource is acquired, before using it in \inlinecode{try} block, and lastly releasing it in the \inlinecode{finally} block. This guarantees that the resource is released, even if error occures after acquiring the resource. Managing resources with \inlinecode{try-finally} lacks in expressivity, composability, and safety compared to higher-level declarative strategy like \inlinecode{Scope}. Firstly, the acquired resource is not visible in the type system, so it is possible to forget to release the resource. Composing acquisition and release of several resources with \inlinecode{try-finally} can be complicated, especially if the acquisition and release must be done in a certain order. When resource is acquired, the lifetime of the resource must be statically determined (by adding a \inlinecode{finally} statement).
 
 
 
@@ -204,3 +271,11 @@ By default parallel combinators in ZIO have unbounded parallelism, meaning that 
 
 \input{sources/zio/limit-parallelism}
 
+
+\todo{Kokoa yhteen huomioita ZIO:sta ?}
+% Expressivity
+% Composability
+% Type safety
+% Comprehensibility
+% Interoperability with existing libraries (even Java)
+% Although quite new, few years of production experience from large companies

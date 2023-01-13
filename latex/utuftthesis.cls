@@ -253,6 +253,10 @@
   \RequirePackage[en-US,fi]{datetime2}        % month names
 }
 
+% Packages differing from UTU template
+\RequirePackage{tikz}
+
+
 
 %% !! Update these only if the document's main language is not finnish or english !!
 \newcommand{\ye@r}{\the\year}

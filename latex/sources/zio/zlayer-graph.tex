@@ -1,0 +1,30 @@
+\begin{algorithm}
+\todo{Lisää esimerkkiin provideSome ja provideSomeLayer?}
+
+\begin{minipage}{0.70\textwidth}
+\begin{minted}{scala}
+val layerA: ZLayer[Any,   Nothing, A] = ???
+val layerB: ZLayer[A,     Nothing, B] = ???
+val layerC: ZLayer[A,     Nothing, C] = ???
+val layerD: ZLayer[B & C, Nothing, D] = ???
+\end{minted}
+\end{minipage}
+%
+%
+\begin{minipage}{0.20\textwidth}
+\begin{tikzpicture}
+     \node (A) at (90:1)  {A};
+     \node (B) at (180:1) {B};
+     \node (C) at (0:1)   {C};
+     \node (D) at (270:1) {D};
+    
+      \path[->] (B) edge (A)
+                (C) edge (A)
+                (D) edge (B)
+                    edge (C);
+\end{tikzpicture}
+\end{minipage}
+
+\caption{Dependencies between \inlinecode{ZLayer}s form a graph. \label{zio:zlayer-graph}}
+\end{algorithm}
+
