@@ -19,10 +19,11 @@ def genericMethod[A](a: A): A = a
 // 'A' must be supertype of 'Bar' and  'B' must be subtype of 'Foo'
 def typeBounds[A >: Bar, B <: Foo](a: A): B = ???
 
-// ??? can replace any expression, because Nothing is bottom type
-// Defined in the standard library
+// ??? is defined in the standard library. It can replace any
+// expression; it's type is Nothing, the bottom type
 def `???` : Nothing = throw new NotImplementedError
 
+// => specifies 'by-name' calling convention:
 // The parameter n is evaluated every time it is used (2 times here)
 def byNameParameter(n: => Int) = n + n
 \end{minted}

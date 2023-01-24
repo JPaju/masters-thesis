@@ -4,14 +4,12 @@ import scala.annotation.*
 import language.experimental.fewerBraces
 
 
-// Define effect polymorphic List.map function
-// Captured capabilities are those captured by the function 'f'
-// They are annotated in the return type as '{f}'
-extension [A](as: List[A])
-  def map[B](f: A => B): {f} List[B] =
+// Define effect polymorphic List.map function. Captured capabilities
+// are those captured by the function 'f', annotated as '{f}'.
+extension [A](as: List[A]) def map[B](f: A => B): {f} List[B] =
     as match
-      case hd :: tl => f(hd) :: tl.map(f)
-      case Nil     => Nil
+      case head :: tail => f(head) :: tail.map(f)  
+      case Nil          => Nil
 
 // Define a logger capability
 @capability class Logger:
@@ -20,14 +18,14 @@ extension [A](as: List[A])
 // Define a function that uses the logger capability
 def doSomething(ns: List[Int], logger: Logger) =
 
-  // Mapping function is pure, thus capture set is empty
+  // The map function is pure, thus capture set is empty
   val pureExpression: {} List[Int] = ns.map(n => n * 2)
 
   // Closes over logger, and that is reflected in the capture set
-  val capturesLogger: {logger} List[Int] = ns.map{ n =>
-      logger.log("multiplying " + n)
-      n * 2
-    }
+  val capturesLogger: {logger} List[Int] = ns.map { n =>
+    logger.log("multiplying " + n)
+    n * 2
+  }
 
 @main def captureCheckingPolymorphism =
   doSomething(List(1,2,3,4, 34), Logger())
