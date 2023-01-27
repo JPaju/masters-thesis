@@ -1,0 +1,17 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+extension [A](as: List[A])
+  def mapM[F[_]: Monad, B](f: A => F[B]): F[List[B]] =
+    as match
+      case Nil => Monad[F].pure(List.empty)
+      case head :: tail =>
+        for
+          b  <- f(head)
+          bs <- tail.mapM(f)
+        yield b :: bs
+\end{minted}
+
+\caption{Monadic \inlinecode{mapM} function for \inlinecode{List} in Scala. %
+\label{monad:mapm}}
+\end{algorithm}

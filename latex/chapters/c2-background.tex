@@ -309,6 +309,13 @@ To actually perform the side effects IO describes, there must be a way to interp
 Performance is really important, since the use of IO monad in a program is intrusive: any expression that references another expression that is evaluated in IO, must also be evaluated in IO. This is to be expected as there is no way to "peel off" the IO wrapper from an expression in a referentially transparent way, since that would mean executing the side effect. The runtime system can be seen as the central authority in effectful programs, as described in section \ref{effects}.
 
 
+\subsection{Polymorphism}
+Many higher-order combinators found in collections and other data types, such as \inlinecode{map}, \inlinecode{filter}, \inlinecode{zip}, and \inlinecode{fold}, do not work when the input function is monadic. This means that a specific monadic counterpart is required for each of combinator. Implementation of these combinators differs considerably from the implementation of the corresponding pure operator. However, implementation can usually be generalized to work with every monad. A convention originating from Haskell is to suffix such combinators with \inlinecode{M} to indicate that it is the monadic version of the combinator. \refsource{monad:mapm} defines effect polymorphic monadic \inlinecode{mapM} operator for \inlinecode{List} that is compatible with any monad.
+
+\input{sources/monad/mapm}
+
+Similarly, looping and branching constructs require their own monadic versions when the predicate is evaluated in a monad. The need for separate monadic combinators is definitely one of the weaknesses of monads, and a possible stumbling block for a newcomer.
+
 
 \subsection{Syntax} \label{background:monad:syntax}
 The "usual" kind of code where functions are applied to values is called \textit{direct style}. Programming with wrapped types (endofunctors), like monads, enforces a different style of syntax called \textit{monadic style}. To perform operations on values in a monadic context, like combining multiple values together, one must use higher-order combinators, such as \inlinecode{map} and \inlinecode{flatMap}. The sequencing combinator will bind the value inside the monad to a variable that could be used in a function. \refsource{monad:syntax} compares the direct style with the monadic style, by the means of usual integer addition and integer addition in the Option monad.
@@ -444,6 +451,7 @@ Unlike monads, algebraic effects naturally compose with one another. Expression 
 Effect polymorphism is usually achieved quite effortlessly with algebraic effects. Listings \ref{alg-eff:polymorphism-unison} (Unison) and \ref{alg-eff:polymorphism-koka} (Koka) both demonstrate this by giving an implementation of \inlinecode{map} function for lists, as well as introducing its usage. When \inlinecode{nums} are mapped with function without any effects, the resulting list \inlinecode{pure} is free of effects. On the other hand, when \inlinecode{nums} are mapped with effectful funcion, the resulting list \inlinecode{effectful} depends on the \inlinecode{Exception} effect. 
 
 \input{sources/alg-eff/polymorphism-unison}
+
 \input{sources/alg-eff/polymorphism-koka}
 
 
