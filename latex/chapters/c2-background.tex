@@ -25,7 +25,6 @@ and a central authority that administers the global resources of a program. (..)
 
 % https://youtu.be/G8XMRZKOhG0?t=498
 Different effects could be categorized as \textit{internal} or \textit{external}. Unlike internal effects, external effects can be observed from the outside. In the context of a whole program, the only external effect is IO, while other effects are internal. In the context of a function, matters are more complicated since effects such as mutable state, raising exceptions, and concurrency can be both internal or external, depending on the specific situation.
-Different effects could be categorized as \textit{internal} or \textit{external}. Unlike internal effects, external effects can be observed from the outside. In the context of a whole program, the only external effect is IO, while other effects are internal. In the context of a function, matters are more complicated since effects such as mutable state, raising exceptions, and concurrency can be both internal or external, depending on the specific situation.
 
 
 \subsection{Mutability} 
@@ -46,13 +45,11 @@ Many synchronous exceptions are related to IO. If attempting to interact with a 
 Other synchronous exceptions may be caused by division by zero or a non-exhaustive pattern match. Probably the most well known synchronous exception is the infamous null reference error, where the program is trying to dereference a pointer that does not point to a valid memory location. In languages that support direct memory access, an attempt to access memory outside of the allowed memory range leads in a program or operating system level exception.~\cite{akward-squad}
 
 Asynchronous exceptions usually originate from the runtime environment of the program, operating system, concurrency, or user interruption. Asynchronously raised exceptions are characterized by the fact that they could occur at an arbitrary point in time~\cite{async-exc}. An example of this is a situation where a thread interrupts the execution of another thread. The whole program could also be interrupted by a user (for example by pressing Ctrl+C) or the runtime, possibly due to a critical error in the program or operating system. Resource exhaustion is another common cause of asynchronous exceptions. Errors like stack overflow or out of memory can happen every time new memory is required from the stack or heap, thus those are categorized as asynchronous. Many environments also support dependencies to libraries that are loaded/linked  dynamically at run time. The programmer cannot always specify the exact time when dynamic loading should take place, and for this reason failing to load required dependencies could be considered an asynchronous exception.~\cite{akward-squad}
-Asynchronous exceptions usually originate from the runtime environment of the program, operating system, concurrency, or user interruption. Asynchronously raised exceptions are characterized by the fact that they could occur at an arbitrary point in time~\cite{async-exc}. An example of this is a situation where a thread interrupts the execution of another thread. The whole program could also be interrupted by a user (for example by pressing Ctrl+C) or the runtime, possibly due to a critical error in the program or operating system. Resource exhaustion is another common cause of asynchronous exceptions. Errors like stack overflow or out of memory can happen every time new memory is required from the stack or heap, thus those are categorized as asynchronous. Many environments also support dependencies to libraries that are loaded/linked  dynamically at run time. The programmer cannot always specify the exact time when dynamic loading should take place, and for this reason failing to load required dependencies could be considered an asynchronous exception.~\cite{akward-squad}
 
 Exceptions can also encode another related and important concept, \textit{optionality}. Encoding optionality via exceptions is achieved by raising an exception that contains only a value of the unit type\footnote{A type whose cardinality is 1 (i.e., that has only one value) and thus does not contain any information.}, signaling that no result could be computed and there is no additional information about the exception. Optionality is an approriate choice instead of exceptions when the cause of the exception is trivial. Such cases include unsuccessfully querying a row from a database with specific id, searching an element from an array or trying to find a substring from a string.
 
 Usually, the semantics of raising and handling an error are considered to interrupt the normal control flow of the program and transferring the execution to the closest appropriate \textit{exception handler}. An exception handler decides if and how to continue the execution, or whether to let the exception bubble up the layers of exception handlers. This "short-circuiting" semantics is a natural way to think and program in the presence of errors. However, the ability to raise errors from an arbitrary location can make it difficult to understand the meaning of the program and prove its correctness. It also poses challenges to ensuring that all exceptions that may be raised are handled appropriately. Lazy evaluation complicates things even further. The evaluation order in a lazily evaluated language may not be obvious to the programmer. This makes it harder to define clear semantics for exceptions.~\cite{imprecise-exceptions}
 
-Effective and thorough exception handling is one of the most important practices in successful software engineering. Conversely, the inability to do so is one of the most significant factors that cause bugs and failures in software systems. A 2014 study by the University of Toronto studied multiple popular open source distributed software systems, such as Redis, Hadoop and Cassandra and found that a large portion (35\%) of catastrophical failures were caused by trivial mistakes in error handling code. Such mistakes include practices like omitting error handling code completely and writing a TODO-comment instead. In addition to failures, inadequate error handling may expose security vulnerabilities in the system.~\cite{simple-testing-failures}
 Effective and thorough exception handling is one of the most important practices in successful software engineering. Conversely, the inability to do so is one of the most significant factors that cause bugs and failures in software systems. A 2014 study by the University of Toronto studied multiple popular open source distributed software systems, such as Redis, Hadoop and Cassandra and found that a large portion (35\%) of catastrophical failures were caused by trivial mistakes in error handling code. Such mistakes include practices like omitting error handling code completely and writing a TODO-comment instead. In addition to failures, inadequate error handling may expose security vulnerabilities in the system.~\cite{simple-testing-failures}
 
 
@@ -88,14 +85,35 @@ A type system sets the rules according to which functions, parameters, expressio
 
 A type system infers or requires the programmer to specify the type of the values related to an expression. Analogously, an effect system infers or requires the programmer to specify the possible effects for every function/expression. Contrary to type systems where an expression usually has just one type, an expression can produce zero or more different effects. Considering the possible effects related to an expression, as a set. An empty set of effects denotes an expression that is free of effects.
 
-Active research related to statically checking effects began in the mid 80s and 90s. Even earlier efforts in this direction were the Pascal extensions Euclid (in the 70s) and Ada (in the 80s) that separated side effecting procedures from pure functions~\cite{real-prog-in-fp}. The term effect system was introduced by \textcite{intgr-fp-ip} in \citeyear{intgr-fp-ip}. Their idea was to assign different \textit{effect classes} to different parts of a program.
-\citeauthor{intgr-fp-ip}'s paper proposed rules for how these different classes are allowed to interact with each other. For example, a pure function is not allowed to call a function that is labeled with a more permissive effect class. This allows the safe mixing of functional and imperative code while preserving equational reasoning of the functional parts and tracking possible effects of the imperative parts. In the system, the only effectful operations were related to allocating, mutating and reading memory locations. The goal was to determine what parts of the program could be run in parallel without changing the semantics of the program.
+Active research related to statically checking effects began in the mid 80s and 90s. Even earlier efforts in this direction were the Pascal extensions Euclid (in the 70s) and Ada (in the 80s) that separated side effecting procedures from pure functions~\cite{real-prog-in-fp}. The term effect system was introduced by \textcite{intgr-fp-ip} in \citeyear{intgr-fp-ip}. Their idea was to assign different \textit{effect classes} to different parts of a program. \citeauthor{intgr-fp-ip}'s paper proposed rules for how these different classes are allowed to interact with each other. For example, a pure function is not allowed to call a function that is labeled with a more permissive effect class. This allows the safe mixing of functional and imperative code while preserving equational reasoning of the functional parts and tracking possible effects of the imperative parts. In the system, the only effectful operations were related to allocating, mutating and reading memory locations. The goal was to determine what parts of the program could be run in parallel without changing the semantics of the program.
 
 Probably the most widely known example of effect systems is checked exceptions in Java (\refsource{java-checked-exc}). This part of Java's type, or effect, system is concerned of tracking exceptions, more specifically where they are thrown and catched. If a method might throw an exception, the exception type must be declared in a \inlinecode{throws} clause in the method's type signature. The compiler forces any code that calls the method to either handle all declared exceptions or to add a \inlinecode{throws} clause to indicate that exceptions will bubble up. Checked exceptions have been widely criticized for making programming clumsy, and nowadays it is common for the whole feature to be circumvented when possible.
 
 \input{sources/checked-exceptions}
 
-Since their introduction, effect systems have evolved significantly and gained more sophisticated features such as the ability to track non-memory related effects like IO and exceptions. Several effect systems~\cite{koka-lang, frank-lang} allow the user to define custom effect types. Effect polymorphism~\cite{polymorphic-alg-effs}, which allows for expressing effectful higher-order functions safely and conveniently, has also been actively researched and developed. Modern languages with built-in effect systems~\cite{unison-lang, ocaml-lang} usually include algebraic effects and handlers, which are discussed in more detail in Section \ref{background:alg-eff}. Library-level support for effect systems is commonly based on monadic effects, which are discussed in section \ref{background:monads}.
+Since their introduction, effect systems have evolved significantly and gained more sophisticated features such as the ability to track non-memory related effects like IO and exceptions. Several effect systems~\cite{koka-lang, frank-lang, unison-lang, ocaml-lang} allow the user to define custom effect types. The research regarding effect systems is active, and several novel approaches and features are emerging.
+
+\todo{Lisätty/muutettu alla olevia kappaleita}
+One feature under active research and development is effect polymorphism. The goal of effect polymorphism is to allow to defining functions, that are polymorphic in the effect of their argument, in a safe way. This allows to define e.g. an effect polymorphic \inlinecode{map} function that accepts as an argument a transformation function and applies the transformation to elements in a context, such as a collection. The challenge is to be able to define just a single a \inlinecode{map} function, per context, in a way where the input function can be either pure or have arbitrary effects, that determine the effect type of evaluating the \inlinecode{map} function.
+
+Several researchers agree that discovering a practical solution to express effect polymorphism is crucial. 
+
+\textcite{scoped-capabilities}:
+\begin{displayquote}
+The problem is not lack of expressiveness – [effect] systems have been
+proposed and implemented for many quite exotic kinds of effects. Rather, the problem is simple lack of usability and flexibility, with particular difficulties in describing polymorphism.
+\end{displayquote}
+\textcite{type-dir-alg-effs}:
+\begin{displayquote}
+In practice though we wish to simplify the types more and leave out ‘obvious’ polymorphism.
+\end{displayquote}
+\textcite{do-be-do-be-do}:
+\begin{displayquote}
+In designing Frank we have sought to maintain the benefits of effect polymorphism whilst avoiding the need to write effect variables in source code.
+\end{displayquote}
+
+Modern languages with built-in effect systems~\cite{koka-lang, frank-lang, unison-lang, ocaml-lang} usually include algebraic effects and handlers, which are discussed in more detail in Section \ref{background:alg-eff}. Library-level support for effect systems is commonly based on monadic effects, which are discussed in section \ref{background:monads}. Research for \textit{capability-based} effect system for Scala is ongoing, which is described in more detail in Section \ref{scala:cc}.
+\todo{Lisätty/muutettu yllä olevia kappaleita}
 
 % Gifford and Lucasse introduced 'effect systems' which use types to record the side-effects performed by a program, and to determine which components of a program can run in parallel without interference.
 %   - Imperative functional programming p. 12, ch. 7.1
@@ -182,7 +200,7 @@ Like intersection types, also union types are commutative, idempotent, and obey 
 \end{itemize}
 
 
-\subsection{Capture checking}
+\subsection{Capture checking}\label{scala:cc}
 Scala 3 is based on a research language called Dotty. The name Dotty comes from \acronym{DOT}{Dependent object types}, which are the theoretical foundation behind Scala 3~\cite{essence-of-dot}. While writing the thesis, a feature called Capture checking~\cite{capture-checking} was added to Dotty and later to Scala 3 as an experimental feature. The idea of capture checking is to enable effectful programming in direct style (discussed in section \ref{background:monad:syntax}), yet tracking effects in the type system and providing strong static guarantees of the correctness of the program.
 
 The initial version of capture checking is based on the work of \textcite{scoped-capabilities} on modeling polymorphic effects with capabilities. \citeauthor{scoped-capabilities} criticize the currently widely used ways of managing effects, such as Java's checked exceptions and monads, arguing that they lack in both usability and flexibility, and result in complex and duplicated code. They conclude that this is due to the transitive nature of effects in function call chains, combined with the classical type-systematic approach that \textquote{characterize the shape of values but not their free variables}, and suggest that modeling effects with capabilities may circumvent the problems they described.
@@ -240,8 +258,7 @@ Monads are traditionally associated with statically typed languages, although no
 
 
 \subsection{Id}
-A trivial example of a monad is the identity, or \inlinecode{Id} monad. It simply encodes the effect of having no effect at all. Lifting values to monadic context is trivial since no lifting is required. The semantics of sequencing does not differ from conventional function application, as demonstrated in \refsource{monad:id}.
-
+\remove{A trivial example of a monad is the identity, or \inlinecode{Id} monad. It simply encodes the effect of having no effect at all. Lifting values to monadic context is trivial since no lifting is required. The semantics of sequencing does not differ from conventional function application, as demonstrated in \refsource{monad:id}.}
 \input{sources/monad/id}
 
 
@@ -350,7 +367,6 @@ Because Scala has subtyping, it emposes some unique constraints to monad transfo
 
 
 
-
 \section{Algebraic effects and handlers} \label{background:alg-eff}
 Algebraic effects and handlers is one of the most recent approach and field of research on the subject of purely functional effectful programming. Algebraic effects take the approach that there are variety of different types of effects and every effect type has a finite set of \textit{operations} which define potentially impure capabilities. To interpret each operation, one must provide \textit{handler} for every effectful operation. Operations define the interface of the effect, while handlers define the semantics of each effect and operation.
 
@@ -359,18 +375,15 @@ The notion of \textquote{algebraic operations} was introduced by \textcite{adequ
 The applicability of algebraic effects and handlers is mostly, at least currently, in strict/eagerly evaluated purely functional programming languages. The idea of transferring the control to an effect handler does not fit the model of lazily evaluated languages naturally, since lazy evaluation does not have explicit control flow in the first place.~\cite{alg-effs-for-fp}
 
 
-
 \subsection{Existing languages and libraries}
 Algebraic effects could be implemented as a library or a language-level feature. There exists several libraries aiming to add support for algebraic effects in languages that do not have native support for them like Idris Effects~\cite{idris-effects}, Haskell Extensible effects~\cite{extensible-effects} and F\# AlgEff~\cite{fsharp-alg-eff}. In the 2010s the theory of algebraic effects evolved in to several research languages such as Eff~\cite{eff-lang}, Koka~\cite{koka-lang}, Frank~\cite{frank-lang}, Links~\cite{links-lang}, and Effekt~\cite{effekt-lang}. The first appearances of algebraic effects in non-research languages have happened in the recent years with Unison~\cite{unison-lang} and OCaml~\cite{ocaml-lang}.
 
-Unison is a programming language with several out-of-the-ordinary features including \textit{abilities}, which are an implementation of algebraic effects from Frank~\cite{frank-lang}. OCaml version 5.0 includes~\cite{ocaml-mc-sep-2021} language-level support for algebraic effects. Unison have had alpha and beta versions since 2019 and is currently aiming to achieve commercial adoption. OCaml 5.0 is in alpha as of September 2022 and stable version planned to be released in the near future. As can be seen, currently algebraic effects are a new concept with little to none industry experience.
-
+Unison is a programming language with several out-of-the-ordinary features including \textit{abilities}, which are an implementation of algebraic effects from Frank~\cite{frank-lang}. Unison have had alpha and beta versions since 2019 and is currently aiming to achieve commercial adoption. OCaml version 5.0~\cite{ocaml-v5} (released in December 2022) includes language-level support for algebraic effects and handlers. As can be seen, currently algebraic effects are a new concept with little to none industry experience.
 
 
 \subsection{Theory of handlers}
 When program encounters an effect operation, its execution is halted, and the control is transferred to the closest handler provided for that specific operation. Handler may also receive some parameters from the program, in the process of taking over the execution from the program. At this point, it is solely the responsibility of the handler to decide how the program will continue.
 
-The idea of effects being interaction between sub-programs and central authority, described in section \ref{effects}, fits algebraic effects naturally. Parts of the program calling effect operations are the sub-program and handlers are the central authority. The concept is powerful enough to implement all previously mentioned monads and even many of the more complicated control structures, built-in to many languages, like try-catch, iterators, and async/await.~\cite{alg-effs-for-fp}
 The idea of effects being interaction between sub-programs and central authority, described in section \ref{effects}, fits algebraic effects naturally. Parts of the program calling effect operations are the sub-program and handlers are the central authority. The concept is powerful enough to implement all previously mentioned monads and even many of the more complicated control structures, built-in to many languages, like try-catch, iterators, and async/await.~\cite{alg-effs-for-fp}
 
 \todo{Sopiiko seuraava kappale tähän? Pitäisikö siirtää conclusoneihin?}
@@ -384,13 +397,11 @@ Handlers have a way to continue executing the program, and optionally apply a tr
 % Single-shot vs. multi-shot vs. exception like handlers (without continuation)
 
 \todo{Sopiiko seuraava kappale tähän? Pitäisikö siirtää conclusoneihin?}
-It is worth noting that the handlers required by a well formed program can be changed without having to change the program code in any way. This could have interesting implications in for example multi-platform development, where one could abstract platform-specific operations to effects and provide different handlers depending on the platform. For example one could provide effect interface for concurrency, which would have drastically different handler implementation in single-threaded environment such as JavaScript compared to multi-threaded environment like JVM. This would be opaque from the perspective of the programmer using the effect interface.
-
+\remove{It is worth noting that the handlers required by a well formed program can be changed without having to change the program code in any way. This could have interesting implications in for example multi-platform development, where one could abstract platform-specific operations to effects and provide different handlers depending on the platform. For example one could provide effect interface for concurrency, which would have drastically different handler implementation in single-threaded environment such as JavaScript compared to multi-threaded environment like JVM. This would be opaque from the perspective of the programmer using the effect interface.}
 
 
 \subsection{Handlers in practice}
 A common way for languages and libraries to implement functionality described above is to provide effect handlers access to a continuation function, that when called, resumes the execution of the program from where it was transferred to the handler in the first place. In other words, the continuation is a function that represents the remaining of the program after the effect is handled. In Unison the handler can continue executing the program by calling the continuation function available when pattern matching against the possible effect constructors.
-\todo{Jos jossain käsitellään continuationeita tarkemmin, voi tästä kappaleesta viitata siihen} 
 
 Syntax for defining a handler for single effect operation in Unison is as follows:
 \inlinecode{{ <operation> <param1, ... , paramN> -> <continuation> } -> <result> }\\
@@ -420,28 +431,20 @@ The handler resumes the program multiple times, two times for every \inlinecode{
 
 
 \subsection{Effect typing}
-Programming with algebraic effects clearly separates effectful computations from values, and that makes language with algebraic effects a perfect candidate for separate type \textbf{and} effect system, which were discussed in section \ref{effects:effect-systems}. All effectful expressions must be provided with corresponding handlers before execution, and by utilizing an effect system, this check could be made statically. Algebraic effects themselves do not require a static type system, but practically all current programming languages with first-class algebraic effects are equipped with an effect system.
-Programming with algebraic effects clearly separates effectful computations from values, and that makes language with algebraic effects a perfect candidate for separate type \textbf{and} effect system, which were discussed in section \ref{effects:effect-systems}. All effectful expressions must be provided with corresponding handlers before execution, and by utilizing an effect system, this check could be made statically. Algebraic effects themselves do not require a static type system, but practically all current programming languages with first-class algebraic effects are equipped with an effect system.
+Programming with algebraic effects clearly separates effectful computations from values, and that makes language with algebraic effects a perfect candidate for separate type \textbf{and} effect system, which were discussed in section \ref{effects:effect-systems}. All effectful expressions must be provided with corresponding handlers before execution, and by utilizing an effect system, this check could be made statically. \rly{Algebraic effects themselves do not require a static type system, but practically all current programming languages with first-class algebraic effects are equipped with an effect system.}
 
 When an expression references effectful operation, the effect system adds that effect to the set of effects associated with the expression. On the other hand, when a effect handler is provided for an expression, the effect system can remove the effect from the set of effects for that specific expression, and possibly add new effects if the implementation of the handler references other effects. Usually algebraic effects could be inferred and are not required to be mentioned in the source code.
 
 Previous examples demonstrate how effect system and algebraic effects cooperate. In \refsource{alg-eff:choice-effect}, \inlinecode{pickNumber} is an expression that evaluates to a natural number and references the \inlinecode{Choice} ability/effect. The referenced effect is reflected in the type signature of the expression. In Listings \ref{alg-eff:choice-constant} and \ref{alg-eff:choice-collect} handler functions for the \inlinecode{Choice} effect are defined. Constant handlers \inlinecode{alwaysTrue} and \inlinecode{alwaysFalse} simply discharge the effect from expressions. The discharging of the effect is evident in the type signature, as it changes from \inlinecode{{Choice} a} to \inlinecode{{} a}, which indicates that the expression does not reference any unhandled effects. Collecting handler \inlinecode{collectAll} discharges the effect as well as changes the type of the expression.
 
 Unlike monads, algebraic effects naturally compose with one another. Expression can reference countless effects and that effect is simply added to the set of effects associated with the expression. Similarly to nested monads and monad transformers, the order in which the handlers are applied is significant and changing the order of handlers might significantly alter the semantics of the program. \refsource{alg-eff:composition} shows the effect signature when an expression references multiple effects, in this case \inlinecode{Choice} and \inlinecode{Exception} effects.
-Unlike monads, algebraic effects naturally compose with one another. Expression can reference countless effects and that effect is simply added to the set of effects associated with the expression. Similarly to nested monads and monad transformers, the order in which the handlers are applied is significant and changing the order of handlers might significantly alter the semantics of the program. \refsource{alg-eff:composition} shows the effect signature when an expression references multiple effects, in this case \inlinecode{Choice} and \inlinecode{Exception} effects.
 
 \input{sources/alg-eff/composition}
 
-Effect polymorphism is a way to implement effectful higher-order functions whose effect type is determined by the effect type of the function received as input. The concept is similar to type variables in parametric polymorphism, but in effect systems instead of type systems. Canonical example of such effect polymorphic function is the \inlinecode{map} function that applies a transformation to values inside a context. The \inlinecode{map} function accepts as an argument a function, whose effect type is unrestricted and is represented as an effect type variable. This effect type variable is also the effect type of the returned expression.
-
-\input{sources/alg-eff/polymorphism-unison}
-
 Effect polymorphism is usually achieved quite effortlessly with algebraic effects. Listings \ref{alg-eff:polymorphism-unison} (Unison) and \ref{alg-eff:polymorphism-koka} (Koka) both demonstrate this by giving an implementation of \inlinecode{map} function for lists, as well as introducing its usage. When \inlinecode{nums} are mapped with function without any effects, the resulting list \inlinecode{pure} is free of effects. On the other hand, when \inlinecode{nums} are mapped with effectful funcion, the resulting list \inlinecode{effectful} depends on the \inlinecode{Exception} effect. 
 
+\input{sources/alg-eff/polymorphism-unison}
 \input{sources/alg-eff/polymorphism-koka}
-
-\todo{Luku algebraic effectien ongelmista?}
-
 
 
 \subsection{Comparison with monads}
@@ -453,4 +456,4 @@ Monadic effects are more mature when compared to algebraic effects, and there is
 
 Programming in direct style can also make it easier for compilers to statically optimize the code, since in monadic programming the continuation is represented as a closure that is computed at runtime \todo{Kapulakieltä? Sama idea myös monadic vs. applicative}. Monadic effects are pure data structures, and implementing combinator functions for them is straight forward without any special language support. Algebraic effects are not necessary values, and combinator-like features are usually implemented in the handlers.
 
-Different algebraic effects compose naturally, whereas the composition of monadic effects is quite clumsy even with techniques like monad transformers, as described in section \ref{background:monad:monad-transformers}. Similarly effect polymorphism is easily achieved with algebraic effects, but monads struggle with it, even though techniques like tagless final try to achieve effect polymorphism with monads\todo{lisää lähde?}.
+Different algebraic effects compose naturally, whereas the composition of monadic effects is quite clumsy even with techniques like monad transformers, as described in section \ref{background:monad:monad-transformers}. \remove{Similarly effect polymorphism is easily achieved with algebraic effects, but monads struggle with it, even though techniques like tagless final try to achieve effect polymorphism with monads\todo{lisää lähde?}.}

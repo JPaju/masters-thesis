@@ -16,6 +16,5 @@ effectful : '{Exception Text} [Nat]
 effectful _ = map (n -> if n > 5 then raise "Nope" else n * 2) nums
 \end{minted}
 
-\caption{Effect polymorphism in Unison. %
-\label{alg-eff:polymorphism-unison}}
+\caption{Effect polymorphic \inlinecode{map} function in Unison. \label{alg-eff:polymorphism-unison}}
 \end{algorithm}

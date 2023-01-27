@@ -3,17 +3,17 @@
 \begin{minted}{scala}
 case class EitherT[F[_], E, A](effect: F[Either[E, A]])
 
-given [E, F[_]: Monad]: Monad[[A] =>> EitherT[F, E, A]] = new:
+given [E, F[_]: Monad]: Monad[[A] =>> EitherT[F, E, A]] with
   def pure[A](a: A): EitherT[F, E, A] =
     EitherT(Monad[F].pure(Right(a)))
 
   extension [A](self: EitherT[F, E, A])
     def flatMap[B](f: A => EitherT[F, E, B]): EitherT[F, E, B] =
       EitherT(
-        self.f.flatMap {
+        self.effect.flatMap {
           case Left(e)  => Monad[F].pure(Left(e))
-          case Right(a) => f(a).f
-        }
+          case Right(a) => f(a).effect
+        },
       )
 \end{minted}
 

@@ -19,9 +19,8 @@ object EitherMonad:
     case Left(e: E)
     case Right(a: A)
 
-  given [E]: Monad[[A] =>> Either[E, A]] = new:
+  given [E]: Monad[[A] =>> Either[E, A]] with
     def pure[A](a: A): Either[E, A] = Right(a)
-
     extension [A](either: Either[E, A])
       def flatMap[B](f: A => Either[E, B]): Either[E, B] =
         either match

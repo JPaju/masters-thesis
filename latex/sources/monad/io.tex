@@ -3,7 +3,7 @@
 \begin{minted}{scala}
 case class IO[A](run: () => A)
 
-given Monad[IO] = new:
+given Monad[IO] with
   def pure[A](a: A): IO[A] = IO(() => a)
   extension [A](io: IO[A])
     def flatMap[B](f: A => IO[B]): IO[B] =

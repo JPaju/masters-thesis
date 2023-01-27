@@ -7,7 +7,7 @@ def wontFail: EitherT[IO, Nothing, Int] = ???
 val program: EitherT[IO, String, Int] =
   for
                       // Type of _ is Unit
-    _     <- mayFail  // If this line produces error
+    _     <- mayFail  // If this line evaluates to Left
     value <- wontFail // This line won't be executed
   yield value
 \end{minted}

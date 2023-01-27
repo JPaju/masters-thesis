@@ -3,7 +3,7 @@
 \begin{minted}{scala}
 def fn(str: String): IO[Either[Unit, Int]] = ???
 
-val ioEitherString: IO[Either[Unit, String]] = IO(Right("initial str"))
+val ioEitherString: IO[Either[Unit, String]] = IO(Right("foo"))
 
 val ioEitherInt: IO[Either[Unit, Int]] =
   ioEitherString.flatMap(either =>
