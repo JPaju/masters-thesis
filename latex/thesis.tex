@@ -29,6 +29,7 @@
 % Custom commands
 \newcommand{\todo}[1]{\textcolor{red}{TODO: #1}}
 \newcommand{\rly}[1]{\textcolor{red}{CHECK:} \textcolor{gray}{#1}}
+\newcommand{\new}[1]{\textcolor{red}{NEW:} \textcolor{gray}{#1}}
 \newcommand{\remove}[1]{\textcolor{blue}{Remove?} \textcolor{gray}{#1}}
 \newcommand{\refsource}[1]{Listing \ref{#1}}
 \newcommand{\acronym}[2]{\nomenclature{#1}{#2} #2 (#1)}
@@ -37,12 +38,11 @@
 
 \begin{document}
 
-\pubyear{2022}
-\pubmonth{5}
+\pubyear{2023}
+\pubmonth{2}
 \publab{Software Engineering}
 \pubtype{di}
-% \title{Managing side effects with functional effect systems}
-\title{Purely functional statically typed programming with side effects}
+\title{The modern landscape of managing effects for the working programmer}
 \author{Jaakko Paju}
 \supervisors{Jaakko Järvi}
 
@@ -59,13 +59,6 @@
 % change the name if the default doesn't sound right
 \renewcommand{\algorithmname}{\listingscaption}
 
-\newcommand{\todo}[1]{\textcolor{red}{TODO: #1}}
-\newcommand{\rly}[1]{\textcolor{red}{CHECK:} \textcolor{gray}{#1}}
-
-\newcommand{\refsource}[1]{Listing \ref{#1}}
-
-\newcommand{\acronym}[2]{\nomenclature{#1}{#2} #2 (#1)}
-
 % Minted 
 \AtBeginEnvironment{algorithm}{\singlespacing}
 \setmintedinline{breaklines}
@@ -81,8 +74,8 @@
 \input{chapters/c1-introduction.tex}
 \input{chapters/c2-background.tex}
 \input{chapters/c3-zio.tex}
-\input{chapters/c4-case-description.tex}
-\input{chapters/c5-case-study.tex}
+% \input{chapters/c4-case-description.tex}
+% \input{chapters/c5-case-study.tex}
 \input{chapters/c6-conclusion.tex}
 
 \printbibliography
