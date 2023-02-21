@@ -1,6 +1,7 @@
 structural ability Exception e where
   raise : e -> a
 
+-- {e} is the polymorphic effect variable
 map : (a -> {e} b) -> [a] -> {e} [b]
 map f = cases
     head +: tail  -> f head +: map f tail

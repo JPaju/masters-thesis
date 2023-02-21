@@ -5,7 +5,7 @@ structural ability Choice where
 
 constantChoice : Boolean -> '{Choice} a -> {} a
 constantChoice choice thunk =
-  handle !thunk with cases
+  handle !thunk with cases -- shallow handler is applied recursively
     { choose -> resume }  -> constantChoice choice '(resume choice)
     { a }                 -> a
 

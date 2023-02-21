@@ -1,19 +1,25 @@
 package fi.jpaju.thesis
 package monad
 
-extension [E, A](either: Either[E, A])
-  def <>[E1, A1](fallback: Either[E1, A1]): Either[E1, A | A1] =
-    either.fold(_ => fallback, a => Right(a))
+import scala.{ Either as SEither, Left as SLeft, Right as SRight }
+
+extension [E, A](either: SEither[E, A])
+  def <>[E1, A1](fallback: SEither[E1, A1]): SEither[E1, A | A1] =
+    either.fold(_ => fallback, a => SRight(a))
 
   def getRight(using ev: E =:= Nothing): A =
     either.fold(e => ???, identity)
 
-object EitherMonad:
-  import Either as SEither
-  import Right as SRight
-  import Left as SLeft
+given [E]: Monad[[A] =>> SEither[E, A]] with
+  def pure[A](a: A): SEither[E, A] = SRight(a)
+  extension [A](either: SEither[E, A])
+    def flatMap[B](f: A => SEither[E, B]): SEither[E, B] =
+      either match
+        case SLeft(e)  => SLeft(e)
+        case SRight(a) => f(a)
 
-  import Either.*
+object EitherMonad:
+  import fi.jpaju.thesis.monad.EitherMonad.Either.*
 
   enum Either[+E, +A]:
     case Left(e: E)

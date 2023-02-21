@@ -1,6 +1,7 @@
 \begin{algorithm}
 
 \begin{minted}{koka}
+// e is the polymorphic effect variable
 fun map(lst : list<a>, f : a -> e b) : e list<b>
   match lst
     Cons(head, tail)  -> Cons(f(head), map(tail, f))

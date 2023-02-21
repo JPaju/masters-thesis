@@ -1,6 +1,7 @@
 effect exception
   ctl raise (exc : e) : a
 
+// e is the polymorphic effect variable
 fun mapZ(lst : list<a>, f : a -> e b) : e list<b>
   match lst
     Cons(head, tail)  -> Cons(f(head), mapZ(tail, f))
