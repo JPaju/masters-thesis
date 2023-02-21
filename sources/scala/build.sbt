@@ -22,7 +22,7 @@ ThisBuild / scalacOptions ++=
 
 javacOptions ++= Seq("-source", "17")
 
-val zioVersion = "2.0.6"
+val zioVersion = "2.0.9"
 
 lazy val root = project
   .in(file("."))
@@ -32,6 +32,6 @@ lazy val root = project
   )
   .settings(
     libraryDependencies ++= Seq(
-      "dev.zio" %% "zio" % zioVersion
-    )
+      "dev.zio" %% "zio" % zioVersion,
+    ),
   )
