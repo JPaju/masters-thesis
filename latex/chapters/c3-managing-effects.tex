@@ -1,0 +1,316 @@
+\chapter{Managing effects}
+
+\section{Effect systems}\label{effects:effect-systems}
+The purpose of an effect system is to allow mixing effectful and pure code safely. The idea of an effect system is very similar to that of a type system. In some programming languages, a type system can be used to implement an effect system, such as in Java or C\#, but in others they are two separate systems, such as in Unison~\cite{unison-lang} or Koka~\cite{koka-lang}.
+
+A type system sets the rules according to which functions, parameters, expressions, and, in some cases, objects can be composed. A static type system checks that these rules are obeyed before the program is run. An effect system enforces rules regarding the effects that expressions and statements have, and how these effects can interact with each other. Similarly to type systems, these interactions are checked statically at compile-time.
+
+A type system infers or requires the programmer to specify the type of the values related to an expression. Analogously, an effect system infers or requires the programmer to specify the possible effects for every function/expression. Contrary to type systems where an expression usually has just one type, an expression can produce zero or more different effects. Considering the possible effects related to an expression, as a set. An empty set of effects denotes an expression that is free of effects.
+
+Active research related to statically checking effects began in the mid 80s and 90s. Even earlier efforts in this direction were the Pascal extensions Euclid (in the 70s) and Ada (in the 80s) that separated side effecting procedures from pure functions~\cite{real-prog-in-fp}. The term effect system was introduced by \textcite{intgr-fp-ip} in \citeyear{intgr-fp-ip}. Their idea was to assign different \emph{effect classes} to different parts of a program. \citeauthor{intgr-fp-ip}'s paper proposed rules for how these different classes are allowed to interact with each other. For example, a pure function is not allowed to call a function that is labeled with a more permissive effect class. This allows the safe mixing of functional and imperative code while preserving equational reasoning of the functional parts and tracking possible effects of the imperative parts. In the system, the only effectful operations were related to allocating, mutating and reading memory locations. The goal was to determine what parts of the program could be run in parallel without changing the semantics of the program.
+
+Probably the most widely known example of effect systems is checked exceptions in Java (\refsource{java-checked-exc}). This part of Java's type, or effect, system is concerned of tracking exceptions, more specifically where they are thrown and catched. If a method might throw an exception, the exception type must be declared in a \inlinecode{throws} clause in the method's type signature. The compiler forces any code that calls the method to either handle all declared exceptions or to add a \inlinecode{throws} clause to indicate that exceptions will bubble up. Checked exceptions have been widely criticized for making programming clumsy, and nowadays it is common for the whole feature to be circumvented when possible.
+
+\input{sources/checked-exceptions}
+
+Since their introduction, effect systems have evolved significantly and gained more sophisticated features such as the ability to track non-memory related effects like IO and exceptions. Several effect systems~\cite{koka-lang, frank-lang, unison-lang, ocaml-lang} allow the user to define custom effect types. The research regarding effect systems is active, and several novel approaches and features are emerging.
+
+\new{One feature under active research and development is effect polymorphism. The goal of effect polymorphism is to allow to define functions, that are polymorphic in the effect of their argument, in a safe way. This allows to define e.g. an effect polymorphic \inlinecode{map} function that accepts as an argument a transformation function and applies the transformation to elements in a context, such as a list. The challenge is to be able to define just a single a \inlinecode{map} function, per context, in a way where the input function can be either pure or have arbitrary effects, that determine the effect of evaluating the \inlinecode{map} function.}
+
+\new{Several researchers agree that discovering a practical solution to express effect polymorphism is crucial for the practical use of effect systems.}
+
+\new{\textcite{scoped-capabilities}:
+\begin{displayquote}
+The problem is not lack of expressiveness – [effect] systems have been
+proposed and implemented for many quite exotic kinds of effects. Rather, the problem is simple lack of usability and flexibility, with particular difficulties in describing polymorphism.
+\end{displayquote}
+\textcite{type-dir-alg-effs}:
+\begin{displayquote}
+In practice though we wish to simplify the types more and leave out ‘obvious’ polymorphism.
+\end{displayquote}
+\textcite{do-be-do-be-do}:
+\begin{displayquote}
+In designing Frank we have sought to maintain the benefits of effect polymorphism whilst avoiding the need to write effect variables in source code.
+\end{displayquote}}
+
+Languages with built-in effect systems~\cite{koka-lang, frank-lang, unison-lang, ocaml-lang} usually include algebraic effects and handlers, which are discussed in more detail in Section \ref{algebraic-effects}. Library-level support for effect systems is commonly based on monadic effects, which are discussed in Section \ref{monads}. Research for \emph{capability-based} effect system for Scala is ongoing, which is described in more detail in Section \ref{capability-effs} \todo{Muuta lausetta koska Capture checking vaihdettiin --> Capability based effects}.
+
+
+
+\section{Unrestricted side effects}
+\new{The most straightforward way to incorporate effects into a programming language is by not giving them any special treatment. This way pure expressions and effectful statements are treated equally and can be combined with each other in any way. The evaluation of any method, function or procedure can cause side effects to occur.}
+
+\new{Unrestricted side effects originate all the way to 50s and 60s when the first programming languages were created. Even in today's software industry, unrestricted side effects are the default way to incorporate effects into a programming language. Virtually all mainstream programming languages allow unrestricted side effects in one way or another. This is probably because the majority of the mainstream languages originate from the C family of programming languages that are essentially imperative.}
+
+\new{Not restricting side effects in any way gives the programmer a lot of freedom when implementing a program. By allowing effects in every expression, the language does not place constraints on how subprograms can be composed. This is way is well-aligned with the imperative paradigm.}
+
+\new{However, the programmer is solely responsible for managing all the effects and making sure that they are compatible with each other. The language is not able to provide help in ensuring the rational use of effects. This way of handling side effects is also not particularly expressive or modular. Creating reusable functions for common side-effecting operations, such as repeating an effect, defining a timeout or retrying, is hard or at least clumsy.}
+
+\new{\refsource{unrestricted-effs} shows a higher-order function \inlinecode{map} for the \inlinecode{List} datatype, and demonstrates how it can be used with pure and effectful mapping functions. A similar function is used in upcoming Sections as an example to demonstrate how such effectful mapping function can be implemented with other methods for managing effects.}
+
+\input{sources/unrestricted-effs}
+
+
+
+\section{Monads} \label{monads}
+Of particular interest in this thesis is the algebraic structure monad. Algebraic structures are a concept that define functions that operate on some parametric type, or types, and are governed by algebraic laws. Algebraic structures are often studied through the lense of category theory, a branch of theoretical mathematics that studies objects, transformations between objects and relationships between different categories. In this thesis algebraic structures and monads in particular are approached from the perspective of computer science, and focusing on how monads are capable of encoding effects.
+
+Functor is a transformation between two categories. In functional programming most, if not all, functors are endofunctors which are transformations from one category back to the same category. In practice endofunctors wrap some other category and allowing transforming the inner category while preserving the outer category. The list datatype is example of an endofunctor, because it allows for applying transformations to elements in the list, resulting in a new list. A monad is a special kind of endofunctor that is capable of collapsing a nested endofunctor structure. In the case of lists, this means that applying such transformation would result in a nested list. A monad is capable of applying the transformation in a way that the resulting list is not nested. Listings \ref{functor:haskell} and \ref{functor:scala} show the definition of Functor type class in Haskell and Scala.
+
+\input{sources/monad/functor-haskell}
+
+\input{sources/monad/functor-scala}
+
+The applicability of monads to programming was not discovered until the late 80s by \textcite{comp-lambda-monads} who showed how monads can define semantics of effectful programs. Moggi's proposed semantics extends lambda calculus in a pure way to support calculations previously considered to be impure. Later the idea of using monads to describe effectual computations was refined by \textcite{comprehending-monads}, \textcite{notions-computations} and \textcite{monads-for-fp}. \new{The approach to effects with monads is to describe computations as ordinary values.}
+
+Any data type can form a monad if it has at least two capabilities: lifting any value to the context of the monad (i.e., the data type), and sequentially composing computations that act on these values. Every computation in these sequences has access to the values that the preceding computations may have produced. These computations produce values that are inside a data type and succeeding computations have access to. Lifting and sequencing must adhere to monad laws in order for the data type to be considered a monad. Monad laws are discussed in more detail in Section \ref{monads:laws}.
+
+In practice several data types naturally form a monad, such as \inlinecode{Array} in JavaScript with \inlinecode{of} function providing lifting and \inlinecode{flatMap} function providing sequencing~\cite{js-array}. Monads and other algebraic structures are often implemented as type classes, and writing programs consists of using operations provided by those type classes. This allows for writing abstract programs that work for any monad instance. The definitions of the Monad type class in Haskell and Scala are provided in Listings \ref{monad:haskell} and \ref{monad:scala}.
+
+\input{sources/monad/haskell}
+
+\input{sources/monad/scala}
+
+Composing programs of sequential instructions is nothing new compared to imperative programming. Monads, however, can control what effects are possible within such computations. The data type (i.e., monad) provides the context in which the computations are performed, and thus defines the semantics of lifting and sequencing. Different monads have different semantics and that allows encoding different effects with monads. The usefulness of monads comes from the fact that sequencing computations one after the other is such a primitive operation in any effectful program. Monads abstract this fundamental operation, and allows for defining the meaning of sequentiality in the context of a specific monad. For example in a list monad, the semantics of sequencing is to perform the computation for every element in the list, and composing multiple lists will result in a cartesian product, demonstrated in \refsource{monad:bind}. Examples of other monads and their semantics are introduced in more detail later in this chapter.
+
+\input{sources/monad/bind}
+
+The naming of monad's functions is dependent on the programming language, library and framework. The lifting function is usually called \inlinecode{pure}, \inlinecode{return}, \inlinecode{unit}, or \inlinecode{succeed}, and the sequencing function is called \inlinecode{bind}, \inlinecode{flatMap}, \inlinecode{chain}, or symbolic alias \inlinecode{>>=}.
+
+In addition to these mandatory functions, monads commonly define more specific functions that only make sense in the context of a particular monad. These functions make it easier and more convenient to use the capabilities of the monad, or possibly to change the behavior of computations in some way. Examples of such functions are presented along with the introduction of specific monad types.
+
+Monads are traditionally associated with statically typed languages, although nothing prevents their use in a dynamically typed language. In statically typed languages monads naturally work as an effect system by making it explicit in the type system if and what effects are involved. When mixing multiple effects with each other, type signatures can get quite chaotic. We will get back into this subject when discussing monad transformers.
+
+
+\subsection{Id}
+A trivial example of a monad is the identity, or \inlinecode{Id} monad. It simply encodes the effect of having no effect at all. \new{This is analogous to traditional imperative and sequential programs.}  Lifting values to monadic context is trivial since no lifting is required. The semantics of sequencing does not differ from conventional function application, as demonstrated in \refsource{monad:id}.
+
+\input{sources/monad/id}
+
+
+\subsection{Either} \label{monads:either}
+\inlinecode{Either} monad encodes the effect of raising and handling exceptions when performing computations that might fail. Since \inlinecode{Either} is a monad, it enables the sequential composition of multiple possibly failing computations. Like the name suggests, computations in \inlinecode{Either} monads can either succeed with a value or fail with an exception. Either has similar short-circuiting semantics as throwing exceptions has in, e.g. Java. When the first exception is encountered, computations that follow will not be performed and the exception remains as the result of the computation. Usually \inlinecode{Either} provides combinators that can transform a failed computation into a successful one. This is semantically similar to catching exceptions. Unlike throwing and catching exceptions, \inlinecode{Either} makes it obvious in the type signature of the function that the computation the function describes has a possibility of failure.
+
+In practice the \inlinecode{Either} data type is commonly implemented as a sum type of two variations: \inlinecode{Left} (exception) and \inlinecode{Right} (success). Usually implementations are right-biased which, among other things, determines the semantics of monadic operations. To lift a value into \inlinecode{Either} monad, the value is simply wrapped in \inlinecode{Right}. The meaning of sequencing in the case of \inlinecode{Right} is to pass successful value to subsequent computations, whereas in the case of \inlinecode{Left} it is to return the failed exception as is and perform no computations. An example of \inlinecode{Either} monad implementation in Scala is given in \refsource{monad:either}
+
+\input{sources/monad/either}
+
+In order for \inlinecode{Either} to better support exception handling, several convenience functions are commonly defined for it. These functions are more specific than the monad structure admits, since they operate in a domain where the computation might produce different values. Next a few of the these functions are introduced in more detail.
+
+One typical scenario in error handling is to define a fallback computation to be performed if the actual computation is unsuccessful. In Haskell this is achieved by utilizing an associative binary operation in \inlinecode{Semigroup} type class, which is defined as \inlinehaskell{(<>) :: Either e a -> Either e a -> Either e a}. In Scala similar semantics are made possible by \inlinecode{orElse} -method on an \inlinecode{Either} object itself, defined as \inlinescala{def orElse[E1, A1](or: => Either[E1, A1]): Either[E1, A | A1]}. \rly{Because Scala 3 has union and subtypes, it is possible for the fallback computation to have different exception and success types as the original \inlinecode{Either}.}
+
+Another common operation in error handling is to transform the error type. There are some differences in the implementation of this functionality depending on the language. Haskell has \inlinecode{BiFunctor} type class where the function \inlinecode{first} allows applying transformations to the left side of \inlinecode{Either}. Scala has \inlinecode{LeftProjection}, which allows to perform monadic operations on the (left) error "channel" of the \inlinecode{Either}. \inlinecode{Either} in Scala also has \inlinescala{def swap: Either[A, E]} method that transforms a \inlinecode{Right} to \inlinecode{Left} and vice versa.
+
+Possibly the most common operation in error handling is to derive some final value from a computation. Since the computation can have either failed or succeeded, both possibilities must be covered. This could be achieved by providing a function for both cases that transforms the corresponding value (failure or success) to the same result type. In Haskell the function is \\\inlinehaskell{either :: (a -> c) -> (b -> c) -> Either a b -> c} and in Scala it's \\\inlinescala{def fold[B](onLeft: E => B, onRight: A => B): B}. \todo{Tarkasta rivitys}
+
+
+\subsection{Reader}
+The reader monad encodes the effect of describing a sequence of computations that require some shared context or environment in order to be evaluated. The idea closely resembles composing functions together by passing arguments from parent to child functions. Instead of explicitly passing every parameter, the reader monad automatically threads the environment through computations. It is noteworthy that the reader monad itself is nothing more than a data structure that describes a computation. In order to retrieve the described result the computation must be executed by providing the environment it requires. Common use-cases for reader monad are dependency injection and context sharing in deeply nested structures such as function calls or component hierarchies in UI frameworks.
+
+\input{sources/monad/reader}
+
+The Implementation of the reader monad (\refsource{monad:reader}) is confusingly simple due to the fact that it is essentially just a wrapper for a function. It could be implemented as a single parameter function that receives the requirements as an argument and returns the result of the computation. Lifting a value to a reader monad is as simple as defining a function that ignores its argument and returns a specified value. The meaning of sequencing two reader computations together is to run both computations providing them with the same parameter.~\cite{fp-overloading-ho-polymorphism}.
+
+Reader has a couple of common operations specific to it. One primitive operation is to retrieve the environment from the reader. The implementation is just an identity function, and the operation is often named \inlinecode{ask}, \inlinecode{get}, or \inlinecode{environment}. Another primitive operation is to actually run the computation the reader monad describes to get the final result from it. Running a reader monad is nothing more than providing the required environment, in some cases there is a helper function \inlinecode{run} or \inlinecode{runReader} to do just that.
+
+
+\subsection{IO}
+IO monad encodes the effect of performing side effects and possibly returning a value that depends on the side effect. This enables the implementation of programs that use, e.g., a console, file system, network or graphical user interface. It is common to also allow expressing mutability via IO monad. Also, IO monads usually provide a way to introduce and manage asynchrony, concurrency, and parallelism. With asynchronous operations comes the desire to define interruptions and timeouts, and handle asynchronous exceptions in a sound way, as discussed in Section \ref{effect-types:exceptions}.
+
+Theoretical background of IO Monad is described by \textcite{imperative-fp}. This work was published a couple of years after Moggi's initial discovery of using monads to model effects. IO monad was originally designed for Haskell, which is a lazily evaluated purely functional programming language. Due to being a lazy language, there is no explicit control flow --- terms are evaluated only when absolutely required. Programming with side effects, however, requires that they are executed in a precisely defined order. Wadler and Peyton-Jones describes the relationship between lazy evaluation and side effects as follows: \textquote{laziness and side effects are fundamentally inimical}. Every expression in Haskell must be referentially transparent and programming with side effects is no exception. Modeling side effects with monads retains referential transparency and determines the execution order of expressions.
+
+Wadler and Peyton-Jones describe a parametric data type \inlinehaskell{IO a} that represents a possibly side effecting program that, \textbf{when executed}, returns a value of type \inlinecode{a}. In other words, \inlinehaskell{IO a} is an ordinary value that can be transformed by passing it into functions that return modified IO values. Also, a program may choose not to execute certain IO values even though they are defined. This idea of modeling side effecting programs as values turned out to be highly useful. It provides superior composability compared to programs with unrestricted side effects. For example it is possible to define combinators that work with every IO program and thus define behaviors like retrying, timeouts, error handling, parallelism and racing in a reusable manner.
+
+IO monads and the idea of programs as values has been adopted to other languages than Haskell, including many impure and eagerly evaluated ones. Examples of such implementations are \titlecite{zio}, \titlecite{cats-effect} and \titlecite{monix} in Scala, \titlecite{effect-ts} in JavaScript/TypeScript, \titlecite{arrow-fx} in Kotlin, \titlecite{missionary} in Clojure, and \titlecite{purescript-eff} and \titlecite{purescript-aff} in PureScript.
+
+Lifting a value into the IO monad means that no side effects are performed and the value is simply wrapped to IO. This bridges the cap between pure and impure worlds by making it possible to bring pure values into a context where describing side effects is possible.
+The meaning of sequencing is to create a description of two side effects that, when executed, are performed one after another. Like with all monads, the latter IO has access to the value produced by the preceding IO computation. A simple example implementation of IO monad is given in \refsource{monad:io}.
+
+\input{sources/monad/io}
+
+The IO monad is fundamentally different from previously introduced monads, which can be implemented in a referentially transparent way. Since the IO monad encodes side effects it is inherently not referentially transparent, because the side effects must be executed \emph{at some point}. To make it possible to write side-effecting programs in a purely functional way, the IO monad separates the \emph{description} of side effects from the \emph{execution} of side effects. Constructing a description of a side-effecting program is referentially transparent, while its execution is not; the latter is delayed, usually happening outside of "user-land" code.
+
+To actually perform the side effects IO describes, there must be a way to interpret IO values into side effects they describe. This is usually the responsibility of the particular \emph{runtime system}. In a purely functional programming language, the runtime cannot be implemented in the language itself. Impure languages have more flexibility in the way of implementing the runtime system, as well as how to encode the IO monad in the first place. Flexibility is useful: modern runtime systems with industry adoption are enormously complex and sophisticated, so that they can utilize the hardware as efficiently as possible to achieve the best performance possible.
+
+Performance is really important, since the use of IO monad in a program is intrusive: any expression that references another expression that is evaluated in IO, must also be evaluated in IO. This is to be expected as there is no way to "peel off" the IO wrapper from an expression in a referentially transparent way, since that would mean executing the side effect. In programs written with the IO monad, the runtime system can be seen as the central authority, as described in Chapter \ref{Effects}.
+
+
+\subsection{Syntax} \label{monads:syntax}
+The "usual" kind of code where functions are applied to values is called \emph{direct style}. Programming with wrapped types (endofunctors), like monads, enforces a different style of syntax called \emph{monadic style}. To perform operations on values in a monadic context, like combining multiple values together, one must use higher-order combinators, such as \inlinecode{map} and \inlinecode{flatMap}. The sequencing combinator will bind the value inside the monad to a variable that could be used in a function. \refsource{monad:syntax} compares the direct style with the monadic style, by the means of usual integer addition and integer addition in the Option monad.
+
+\input{sources/monad/syntax}
+
+Programming with monads leads to numerous sequencing functions one after another. This can get verbose, and the intent of the code might be harder to see because it is obfuscated by the "monadic machinery". Some languages have built-in support for representing monadic computations in a more convenient way. Usually this comes in the form of special syntax for sequencing multiple monadic computations together with minimum boilerplate. The syntax is nothing more than syntactic sugar that the compiler converts to calls to monadic sequencing functions. Examples of such syntax are \textcite{haskell-do-notation}, \textcite{scala-for-comprehension}, \textcite{fsharp-computation-expression}, and \textcite{ocaml-bind-ops}. \refsource{monad:for-syntax} compares Scala's for-comprehension syntax that desugars to sequence of \inlinecode{flatMap}s and one final \inlinecode{map} function.
+
+\input{sources/monad/for-syntax}
+
+A technique for programming in direct style with monadic effects while preserving the semantics of the specific monad has been proposed~\cite{representing-monads}. The technique is called \emph{monadic reflection}, and it utilizes the fact that programs written in monadic style could be translated into programs written in \acronym{CPS}{Continuation Passing Style}. The proposed technique requires from the programming language or platform a language-level support for first-class continuations/suspensions/coroutines. Monadic reflection requires for each monad an implementation of a type class with two operations: \inlinecode{reify} and \inlinecode{reflect} that wrap and unwrap values to and from the monadic context. The original motivation for monadic reflection was to support monadic effects in Scheme, but in practice monad reflection has hardly gained any traction in any functional library or language. There has been, however, some recent research on how monadic reflection could work with capability-based effect tracking in Scala, and also a proof-of-concept implementation in Scala 3~\cite{representing-monads-capabilities, monadic-reflection-scala}.
+
+
+\subsection{Monad Laws} \label{monads:laws}
+For a data type to form a monad, it must adhere to three laws, also known as the monad laws: associativity, left identity, and right identity. These laws are simply rules that the operations on a data type must follow. The laws precisely define the semantics of a data type and ensure that desired semantics are preserved when refactoring. Laws are what separate one algebraic structure from another.
+To be precise, an algebraic structure is totally defined by its operations and the laws that govern these operations. Thus the definition of monad is an algebraic structure with two operations
+\inlinecode{pure} and \inlinecode{bind}, obeying the laws of associativity, left identity, and right identity, nothing more, nothing less.~\cite{fp-in-scala}
+
+\input{sources/monad/laws/associativity}
+
+Associativity means that if there is a binary operation\footnote{Function that takes two values and produces another value} that is applied to three or more values, the order of application does not change the resulting value. In other words, the order of parentheses does not matter. Common examples of associative operations include integer addition and multiplication, string concatenation, and boolean \inlinecode{&&} and \inlinecode{||} operations. In the context of monads, associativity states that the semantics of sequencing are not dependent on nesting of the \inlinecode{bind} operations. An example of this is provided in \refsource{monad:laws:associativity}.
+
+\input{sources/monad/laws/identity}
+
+Left and right identity laws define how lifting and sequencing must interoperate. Left identity states that if a value is lifted to the monadic context and then applied to a function using the sequencing operator, it must be equal to just applying the value to the function without lifting it into the monadic context. Right identity states that if a value is lifted into monadic context and sequenced into lifting function, it must be equal to original lifted value. An example of both identity laws is provided in \refsource{monad:laws:identity}.
+
+
+\subsection{Monad transformers}\label{monads:monad-transformers}
+So far we have gone through how monads can be used to encode several side effects. However, in practice it is common that multiple effects need to be used in tandem. Practically all applications use the IO monad and they may desire to model exceptions and early termination with the Either monad, and access configuration or other context provided by the Reader monad. There is nothing to prevent manually stacking multiple monads to achieve all these functionalities.
+
+Stacking multiple monads will lead to nested type signatures. The order of stacking is important, as the same types nested in different order may imply totally different meanings. For example, \inlinescala{IO[Either[Error, Success]]} is a side effecting program that produces either a result of type \inlinecode{Success} or fails with an exception of type \inlinecode{Error}. On the other hand, an expression of type \inlinescala{Either[Error, IO[Success]]} is a program that will in the success case perform some side effects to produce a value of type \inlinecode{Success}, or fail with exception of type \inlinecode{Error} without any side effects.
+
+Programming with nested monads leads to added boilerplate. To lift a value in to a nested monad, it must be manually wrapped with every monad in the correct order. The programmer must manually thread the value inside monad layers through the program while preserving the nesting order and semantics of each monad. Every monad has slightly different semantics, so implementation details differ depending on the monad type. \refsource{monadtransformer:io-either} demonstrates the required syntax when programming with nested IO and Either monads.
+
+\input{sources/monadtransformer/io-either}
+
+In addition to obfuscating the intent, manually implementing all of this functionality is a burden to the programmer and a possible source of bugs. Sometimes the cause of bugs could be highly subtle, for example when using Either for error handling inside IO. An example of this is provided in \refsource{monadtransformer:subtle-bugs}. The programmer might be relying on the short-circuiting semantics of Either but when used inside the IO monad, the error is silently swallowed. It is even possible that the return type of \inlinecode{mightFail} was initially \inlinescala{IO[Unit]}, and it was later refactored to also include an error case. In this situation, the compiler does not report an error since discarding values is allowed. As there are arbitrarily many ways to nest monads, the number of similar possible bugs is indefinite.
+
+\input{sources/monadtransformer/subtle-bugs}
+
+Nesting monads also comes with performance considerations. Calls to monadic functions must propagate through every layer of nesting, thus increasing indirection and the number of function calls. Also memory consumption increases because each nested monad consumes some amount of memory. The exact magnitude of performance implications depends on the language, platform, and runtime environment.
+
+\input{sources/monadtransformer/either-t}
+
+
+Monad transformers can avoid nested monads and help compose multiple monads into one. A Monad transformer is simply a wrapper for one monad that gives it also the semantics of another monad, just like nested monads. Like every monad, the composed monad must obey the monad laws. There is no universal way to compose monads, each monad must have its own monad transformer instance. For some monad pairs composition is meaningless, or it is not possible to define a monad transformer.
+
+The nested monad in \refsource{monadtransformer:io-either}, \inlinescala{IO[Either[E, A]]}, is isomorphic to \\\inlinescala{EitherT[IO, E, A]} (defined in \refsource{monadtransformer:either-t}) which is a monad transformer for Either monad applied to IO. This monad is capable of encoding side effects as well as terminating early in the presence of errors. \refsource{monadtransformer:either-t-io} shows an identical program to that in \refsource{monadtransformer:subtle-bugs} but one that does not suffer from the issues described earlier. This is since EitherT composes with any other monad with short-circuiting semantics.
+
+\input{sources/monadtransformer/either-t-io}
+
+Monad transformers alleviate some of the issues encountered when nesting monads manually. There is less syntactic overhead since the monad transformer threads the values through the monad stack and does all the required wrapping and unwrapping. However, many of the problems with nested monads are also present in monad transformers. The order of nesting is still significant, performance considerations are similar and every monad requires an unique implementation.
+
+Because Scala has subtyping, it emposes some unique constraints to monad transformers. EitherT defined in \refsource{monadtransformer:either-t} was invariant on the monad it composes. With this definition the code in \refsource{monadtransformer:either-t-io} will not compile since \inlinecode{mightFail} and \inlinecode{willNotFail} do not have identical type signatures. To overcome this issue, there exists multiple solutions each with their pros and cons. One might define the EitherT to require the composed monad to be covariant. This has the obvious downside that it restricts what monads are compatible with EitherT. An other option would be to define widening operators on invariant EitherT, but that would place a burden on the programmer who would have to explicitly invoke those methods. Both options are demonstrated in \refsource{monadtransformer:either-t-variance}.
+
+\input{sources/monadtransformer/either-t-variance}
+
+
+\subsection{Polymorphism}
+Many higher-order combinators found in collections and other data types, such as \inlinecode{map}, \inlinecode{filter}, \inlinecode{zip}, and \inlinecode{fold}, do not work when the input function is monadic. This means that a specific monadic counterpart is required for each of combinator. Implementation of these combinators differs considerably from the implementation of the corresponding pure operator. However, the implementations can usually be generalized to work with every monad including monad transformers. A convention originating from Haskell is to suffix such combinators with \inlinecode{M} to indicate that it is the monadic version of the combinator. \refsource{monad:mapm} defines the effect polymorphic monadic \inlinecode{mapM} operator for \inlinecode{List} that is compatible with any monad.
+
+\input{sources/monad/mapm}
+
+Similarly, looping and branching constructs require their own monadic versions, such as \inlinecode{ifM} and \inlinecode{whileM}, when the predicate is evaluated in a monad. The need for separate monadic combinators is definitely one of the weaknesses of monads, and a possible stumbling block for a newcomer.
+
+\new{Monads provide a referentially transparent way of modeling effects. As a result, programs written using monads are modular and can be safely refactored. Expressivity is also high; there are many operators, and new ones can be easily implemented in terms of existing ones. However, monads largely determine how  programs should be written. They enforce monad syntax instead of direct one. Many existing combinators and control structures require a monadic counterpart. Also, composing different effects together is not straight forward since it requires nesting monads or using monad transformers.}
+
+
+
+\section{Algebraic effects and handlers} \label{algebraic-effects}
+Algebraic effects and handlers are one of the most recent approaches and fields of research on the subject of purely functional effectful programming. Algebraic effects take the approach that there are variety of different types of effects and every effect type has a finite set of \emph{operations} which define potentially impure capabilities. To interpret each operation, one must provide a \emph{handler} for every effectful operation. Operations define the interface of the effect, while handlers define the semantics of each effect and operation.
+
+The notion of \textquote{algebraic operations} was introduced by \textcite{adequacy-for-alg-effs} in \citeyear{adequacy-for-alg-effs} and they refined the idea in \cite{comp-effs-and-ops} and \cite{alg-ops-gen-effs}. The idea of handlers accompanying algebraic effects was first presented by \textcite{handlers-of-alg-effs} in \citeyear{handlers-of-alg-effs} and later \textcite{handling-alg-effs} in \citeyear{handling-alg-effs}. The idea was similar to what Moggi discovered in \cite{notions-computations}, but \citeauthor{adequacy-for-alg-effs} considered operations to be primitive instead being derived from the monadic context.
+
+The applicability of algebraic effects and handlers is mostly, at least currently, in strict/eagerly evaluated purely functional programming languages. The idea of transferring the control to an effect handler does not fit the model of lazily evaluated languages naturally, since lazy evaluation does not have explicit control flow.~\cite{alg-effs-for-fp}
+
+
+\subsection{Existing languages and libraries}
+Algebraic effects can be implemented as a library or a language-level feature. There are several libraries that aim to add support for algebraic effects in languages that do not have native support for them, like Idris Effects~\cite{idris-effects}, Haskell Extensible effects~\cite{extensible-effects} and F\# AlgEff~\cite{fsharp-alg-eff}. In the 2010s the theory of algebraic effects evolved in to several research languages such as Eff~\cite{eff-lang}, Koka~\cite{koka-lang}, Frank~\cite{frank-lang}, Links~\cite{links-lang}, and Effekt~\cite{effekt-lang}. The appearance of algebraic effects in non-research languages has only happened in the recent years, with Unison~\cite{unison-lang} and OCaml~\cite{ocaml-lang}.
+
+Unison is a programming language with several out-of-the-ordinary features, including \emph{abilities}, which are an implementation of algebraic effects from Frank~\cite{frank-lang}. Unison have had alpha and beta versions since 2019 and it is currently aiming to achieve commercial adoption. OCaml version 5.0~\cite{ocaml-v5} (released in December 2022) includes language-level support for algebraic effects and handlers. As can be seen, currently algebraic effects are a new concept with little to no experience from industry.
+
+
+\subsection{Theory of handlers}
+When program encounters an effect operation, its execution is halted, and the control is transferred to the closest handler provided for that specific operation. Handler may also receive some parameters from the program in the process of taking over the execution from the program. At this point, it is solely the responsibility of the handler to decide how the program will continue.
+
+The idea of effects being interaction between sub-programs and central authority, described in Chapter \ref{Effects}, fits algebraic effects naturally. The parts of the program that call effect operations of algebraic effects are the sub-program and the handlers are the central authority. \new{Compared to monads, algebraic effects take a different approach. Pure values are separate from effectful computations, which are defined as effect operations and performed by the handlers.} The concept is powerful enough to implement all previously mentioned monads and even many of the more complicated control structures, built-in to many languages, like try-catch, iterators, and async/await.~\cite{alg-effs-for-fp}
+
+A common way of handling an effect is to transform it to another effect or data type. Many times higher-level effects are implemented in terms of lower level effects, and finally the most primitive effects, such as IO, are provided by runtime. Eventually this forms a graph of effects and handlers depending on each other~\cite{intro-to-alg-eff}. Providing an expression with an effect handler it requires is said to \textquote{discharge} the effect from the expression. In order to safely evaluate an expression all of its effects must be discharged.
+
+Handlers have a way to continue executing the program, and optionally apply a transformation function to the final value of the expression they handle. However it is totally up to the specific handler to decide how and if to continue the execution or whether to apply the final transformation. This way the handler has the full power to decide how to act. It may continue the execution and, depending on the operation, supply a value to continue with, or it may decide to terminate the execution and continue by executing a different part of the program instead. The handler may even decide to execute a continuation multiple times and possibly collect all results of the continuations to a list. The continuation might as well return the result of evaluating the program, and the handler may use this result as it wishes.
+
+It is worth noting that the handlers required by a well formed program can be changed without having to change the program code in any way. This could have interesting implications in for example multi-platform development, where one could abstract platform-specific operations to effects and provide different handlers depending on the platform. For example one could provide an effect interface for concurrency, which would have drastically different handler implementations in a single-threaded environment such as JavaScript compared to multi-threaded environment like JVM. This would be opaque from the perspective of the programmer using the effect interface.
+
+
+\subsection{Handlers in practice}
+Languages and libraries that implement algebraic effects provide effect handlers access to a continuation function that,  when called, resumes the execution of the program from where it was transferred to the handler in the first place. In other words, the continuation is a function that represents the remaining of the program after the effect is handled.
+
+\new{
+There are several ways to implement handlers in a language. Handler can be either \emph{deep} or \emph{shallow}. A deep handler handles all effects of specific type in an expression, while shallow handler only handles the first effect of its corresponding type. A shallow handler can usually be converted to deep handler by applying it recursively. The continuation provided to the handler can be either \emph{single-shot} or \emph{multi-shot}. Single-shot continuation can be invoked only a single time, whereas multi-shot continuation can be invoked many times. A handler usually handles only a single effect, but if the language supports \emph{multihandlers}, the same handler can handle several effects at once.
+}
+
+\new{Handlers in Unison are shallow with multi-shot continuations.}
+In Unison the handler can continue executing the program by calling the continuation function available when pattern matching against the possible effect constructors. The syntax for defining a handler for single effect operation is as follows: \\\inlinecode{{ <operation> <param1, ... , paramN> -> <continuation> } -> <result> }.\\ Matching a final transformation, or the pure case, is defined with a simple pattern:
+\inlinecode{{ <operation-result> } -> <handler-result> }.
+
+\input{sources/alg-eff/unison-exc}
+
+\new{Continuations in Koka's handlers are multi-shot, like in Unison, but the handlers are deep unlike Unison.} In Koka an operation handler is defined with the syntax: \inlinecode{<operation>(<param1, ... , paramN>) -> <result>}, and the continuation is implicitly in scope via the keyword \inlinecode{resume}. The final transformation is defined with \inlinecode{return(<operation-result>) -> <handler-result>}
+
+\input{sources/alg-eff/koka-exc}
+
+Listings \ref{alg-eff:unison-exc} and \ref{alg-eff:koka-exc} demonstrate how to define an effect and handler, as well as how to use the final transformation function when implementing effect handlers. They define an effect type \inlinecode{Exception} that is capable of interrupting a program by raising an exception of type \inlinecode{e}, while the uninterrupted program would have resulted in a value of type \inlinecode{a}. The handlers discharge the effect by translating it to the data type \inlinecode{Optional a}/\inlinecode{Maybe a} by converting a \inlinecode{raise} operation to \inlinecode{None}/\inlinecode{Nothing} and utilizing the final transformation to convert a value of type \inlinecode{a} to \inlinecode{Some a}/\inlinecode{Just a}.
+
+\input{sources/alg-eff/choice-effect}
+
+\refsource{alg-eff:choice-effect} defines an effect \inlinecode{Choice} that has a single operation \inlinecode{choose} that results in a \inlinecode{Boolean}. The function \inlinecode{pickNumber} selects a number based on the results of the \inlinecode{choose} operation. The code that uses the effect does not enforce how the choosing operation should be implemented, but it works with any implementation.
+
+A possible handler implementation for the \inlinecode{Choice} effect could be a handler that always chooses the same \inlinecode{Boolean} value. \refsource{alg-eff:choice-constant} gives an example of such handler with two helper handlers, \inlinecode{alwaysTrue} and \inlinecode{alwaysFalse} that always choose the corresponding value.
+
+\input{sources/alg-eff/choice-constant}
+
+Another possible handler implementation is one that collects all possible results in a list.
+The handler resumes the program multiple times, two times for every \inlinecode{choose} operation to be precise. An example of such implementation is given in \refsource{alg-eff:choice-collect}.
+
+\input{sources/alg-eff/choice-collect}
+
+
+\subsection{Effect typing}
+Programming with algebraic effects clearly separates effectful computations from values, which makes a language with algebraic effects a good candidate for separate type \textbf{and} effect systems, which were discussed in Section \ref{effects:effect-systems}. All effectful expressions must be provided with corresponding handlers before execution, and by utilizing an effect system, this check can be made statically. Algebraic effects themselves do not require a static type system, but practically all current programming languages with first-class algebraic effects are equipped with an effect system.
+
+When an expression references an effectful operation, the effect system adds that effect to the set of effects associated with the expression. On the other hand, when an effect handler is provided for an expression, the effect system can remove the effect from the set of effects for that specific expression, and possibly add new effects if the implementation of the handler references other effects. Usually algebraic effects could be inferred and are not required to be mentioned in the source code.
+
+Previous examples demonstrate how effect system and algebraic effects cooperate. In \refsource{alg-eff:choice-effect}, \inlinecode{pickNumber} is an expression that evaluates to a natural number and references the \inlinecode{Choice} ability/effect. The referenced effect is reflected in the type signature of the expression. In Listings \ref{alg-eff:choice-constant} and \ref{alg-eff:choice-collect} handler functions for the \inlinecode{Choice} effect are defined. Constant handlers \inlinecode{alwaysTrue} and \inlinecode{alwaysFalse} simply discharge the effect from expressions. The discharging of the effect is evident in the type signature, as it changes from \inlinecode{{Choice} a} to \inlinecode{{} a}, which indicates that the expression does not reference any unhandled effects. The collecting handler \inlinecode{collectAll} discharges the effect as well as changes the type of the expression.
+
+Unlike monads, algebraic effects naturally compose with one another. An expression can reference any number of effects and those effects are simply added to the set of effects associated with the expression. Similarly to nested monads and monad transformers, the order in which the handlers are applied is significant and changing the order of handlers might significantly alter the semantics of the program. \refsource{alg-eff:composition} shows the effect signature when an expression references multiple effects, in this case \inlinecode{Choice} and \inlinecode{Exception} effects.
+
+\input{sources/alg-eff/composition}
+
+\new{Algebraic effects with handlers usually make it possible to achieve effect polymorphism by defining an \emph{effect variable} that represents a generic effect type, or lack thereof.} Listings \ref{alg-eff:polymorphism-unison} (Unison) and \ref{alg-eff:polymorphism-koka} (Koka) both demonstrate this by giving an implementation of the \inlinecode{map} function for lists, as well as introducing its usage. When \inlinecode{nums} are mapped with a function without any effects, the resulting list \inlinecode{pure} is free of effects. On the other hand, when \inlinecode{nums} are mapped with an effectful funcion, the resulting list \inlinecode{effectful} depends on the \inlinecode{Exception} effect. 
+
+\input{sources/alg-eff/polymorphism-unison}
+
+\input{sources/alg-eff/polymorphism-koka}
+
+\new{
+Recently another approach of describing effects alongside algebraic effects and handlers has emerged called \emph{capabilities}. Capabilities are a novel approach that view effects differently compared to effect handlers; instead of denoting an expression with effects, they place requirement that the evaluation context contains a \emph{capability} for an effect. The distinction between the two may seem subtle, but capabilities naturally express effect polymorphism and thus allow for better developer ergonomics.~\cite{scoped-capabilities}
+}
+
+\new{
+Research on capabilities is ongoing and, to my knowledge, only Effekt~\cite{effekt-lang} and Scala with capture checking~\cite{capture-checking} take this approach. The proposals, however, are promising. With capabilities it should be possible to define an effectful \inlinecode{List.map} function that has signature: \inlinescala{def map(f : A => B): List [B]}, which is effect polymorphic but does not mention any effect variables in the type signature.~\cite{scoped-capabilities}
+}
+
+\new{
+Algebraic effects provide high expressive power and good modularity with effectful computations. Programs can be written in direct style, albeit handlers must be implemented in a special way. Algebraic effects also offer great composability between different effects and different effects can be combined freely. Effects can be locally introduced and eliminated. The usually included effect system helps with refactoring by ensuring that if an existing expression is refactored to have a new effect, it is handled appropriately.
+}
+
+\new{
+Unlike monads, algebraic effects do not offer equational reasoning and it is not always safe to replace expression with its value. Algebraic effects are still a active field of research with many open questions regarding, for example, shallow vs. deep handlers, single vs. multi-shot continuations, and multihandlers. Research on capability-based effects is in its infancy.
+}
+
+
+
+\section{Capability based effects}\label{capability-effs}
+\todo{Pohjusta lukua ennen kun hypätään Effektiin ja capture checkingiin}
+Scala 3 is based on a research language called Dotty. The name Dotty comes from \acronym{DOT}{Dependent object types}, which are the theoretical foundation behind Scala 3~\cite{essence-of-dot}. While writing the thesis, a feature called Capture checking~\cite{capture-checking} was added to Dotty and later to Scala 3 as an experimental feature. The idea of capture checking is to enable effectful programming in direct style (discussed in Section \ref{monads:syntax}), yet tracking effects in the type system and providing strong static guarantees of the correctness of the program.
+
+The initial version of capture checking is based on the work of \textcite{scoped-capabilities} on modeling polymorphic effects with capabilities. \citeauthor{scoped-capabilities} criticize the currently widely used ways of managing effects, such as Java's checked exceptions and monads, arguing that they lack in both usability and flexibility, and result in complex and duplicated code. They conclude that this is due to the transitive nature of effects in function call chains, combined with the classical type-systematic approach that \textquote{characterize the shape of values but not their free variables}, and suggest that modeling effects with capabilities may circumvent the problems they described.
+
+The goal of capture checking is to address many of the limitations in effectful programming. These include how to solve the "What color is your function" problem~\cite{what-color-is-your-function}, how to express effect polymorphism, how to combine manual and automatic memory management, how to express high-level concurrency and parallelism safely, and how to migrate already existing programs to use capture checking~\cite{odersky-twitter-caprese}. Active research on capture checking focuses on the usability aspect of static effect tracking, which likely will evolve around effect polymorphism, inferring the captured capabilities, direct style of programming, and in general minimizing the overall syntactic overhead.
+
+Capture checking aims to address effects such as throwing exceptions, IO, mutability, suspending computations and continuations. Resources are similar to effects but have some distinct properties. Resources, such as file handles, network connections, or memory must be acquired before use, and disposed afterward to possibly free up OS level resources. A resource has \emph{lifetime} in which it can be used, and the use of an already disposed resource should be prevented. Also, the sharing of a resource between multiple parties requires rules. Resource lifetimes and rules should preferably be enforced statically by the type system. There are close connections in capture checking and linear type systems, for example Rust lifetimes~\cite{rust-lifetimes}.
+
+The fundamental idea of capture checking differs from the traditional effect system approach, where the programmer annotates the effects that the execution of an expression might have. Capture checking, on the other hand, keeps track of the captured free variables in expressions. This means that a capability is a normal value, like any other variable in a program. Both resources and effects can similarly be modeled in this way. In the context of capture checking, an expression is pure if it does not capture, i.e. close over, any capability. To make programming with capabilities easier, capabilities can be implicitly passed to expressions, instead of requiring one to explicitly thread capabilities through a program. The implicit system in Scala should be well suited for this task.
+
+Capture checking can be enabled in Scala version 3.2.1 onwards with the compiler option \inlinecode{-Ycc}. The annotation \inlinescala{@capability} is used to mark a class/trait as capability that can be tracked. Captured capabilities are annotated before type annotation inside braces, e.g.: \inlinescala{val a: {c} Int = 1}, where value \inlinecode{a} is annotated with capability \inlinecode{c}. \refsource{scala:cc-eff-polymorphism} provides a larger example that defines a effect polymorphic \inlinecode{List.map} function and demonstrates its use. The syntax of capture checking is experimental and may be subject to change in the future.
+
+\input{sources/scala/cc-eff-polymorphism}
+
+Odersky's research group is actively working on capabilities, as evidenced by a recent large grant~\cite{capture-checking-grant}. This research project is called Caprese (Capabilities for resources and effects), and its goal is a universal theory of resources and effects based on capabilities. It will be interesting to see the results of from Odersky's group in the coming years.

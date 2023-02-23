@@ -68,12 +68,12 @@
 
 % Citing
 \newcommand{\titlecite}[1]{\citetitle{#1}~\cite{#1}}
-% \newcommand{\titlecite}[1]{\citetitle{#1}}
 
 % Content
 \input{chapters/c1-introduction.tex}
-\input{chapters/c2-background.tex}
-\input{chapters/c3-zio.tex}
+\input{chapters/c2-effects.tex}
+\input{chapters/c3-managing-effects}
+\input{chapters/c4-zio.tex}
 \input{chapters/c5-case-study.tex}
 \input{chapters/c6-conclusion.tex}
 
@@ -86,12 +86,12 @@ page counting to work!
 \end{comment}
 
 
-\appchapter{Liitedokumentti}
 
-Liitteen ohjelmakoodi kuvaa matemaattisen
-monadirakenteen pohjalta rakentuvan Haskellin tyyppiluokan. Tyyppiluokan
-voi nähdä eräänlaisena abstraktina ohjelmointirajapintana % (API\nomenclature[API]{API}{Application Programming Interface}),
-joka muodostaa ohjelmoijalle abstraktin ohjelmointikielen käyttöliittymän
-% (UI\nomenclature[UI]{UI}{User Interface}).
+\appchapter{Type classes}\label{typeclasses}
+Type classes are a method to achieve ad-hoc polymorphism. They were first introduced by \textcite{ad-hoc-less-ad-hoc} in 1989 as a way to enable operator overloading in a programming language with Hindley-Milner type system. Eventually type classes were implemented in Haskell, largely based on Wadler's and Blott's proposal. A couple of years later, when applications of monads and related algebraic structures in programming were discovered~\cite{comp-lambda-monads}, type classes were a natural way to implement such algebraic structures.
+
+Type class is an abstraction that defines the behavior of a class of types. This enables one to implement generic functions that work with any type that is constrained to belong to a type class. A type is said to belong to a type class if it has \emph{instance} of that type class. An instance of a type class contains functions and/or values that implement the behavior of the type class. Instances are defined separately from the type for which the instance is. It is thus possible to provide type class instances for third party data types after they have been defined. The example in \refsource{typeclass} demonstrates how type classes enable the implementation of polymorphic functions that work with any data type that belongs to a specific type class.
+
+\input{sources/typeclass}
 
 \end{document}
