@@ -1,39 +1,29 @@
 \chapter{Conclusion}
 
-% - Tracking effects has not been widely adopted in the industry.
-%   - There could be huge potential if developer ergonomics, education and tooling are good enough.
+Monads are a way to encode effects that was discovered in the 90s. It is possible to use monads in a majority of current languages, as long as it has support for higher-order functions. Assuming used in a statically typed language, monads also provide an effect system, in addition to managing effects. Monads have been used in the industry for a long time and it is quite mature method today. Challenges with monads is that they enforce that programs are written in monadic style. Also, combining different monadic effects is not straightforward and requires special treatment.
 
-% - Puhtaasti funktionaalisessa ja laiskassa kielessä (Haskell) ei sinänsä ole tarvetta effect systemille, koska:
-% "But effect systems are designed for impure,. strict functional languages, where the order of sequencing is implicit. Our work is designed for pure, lazy functional languages, and the purpose of the 'bind' operation is to make sequencing explicit where it is required."
-%   - Imperative functional programming p. 13, ch. 7.1
+Algebraic effects and handlers are a more recent approach that was discovered in the early 2000s and first academic languages appearing in the 2010s. First languages with support for algebraic effects intended for commercial use surfaced in the early 2020s. Algebraic effects practically require a language that has native support. Such languages usually come with built-in effect system as well. The languages allow to write effectful programs in direct style, and combining different effects is effortless. However, algebraic effects and handlers are a recent practice with many open questions regarding how they should be included in the language.
 
-% - Computations as values (monadic & unison, but not algebraic effects in general) has many use cases in distributed systems
+Algebraic effects enable one to write programs in a direct style that resembles imperative programming. It could be argued that the direct style of programming is more familiar to majority of programmers, thus making algebraic effects easier to comprehend than monadic effects. Monadic effects, on the other hand, are far more accessible to the average programmer than algebraic effects, since there are several monadic effect libraries available for different languages. Both methods enable highly expressive and modular effects; monads with combinators that modify a value representing a computation and algebraic effects with handlers that interpret the effect in a specific manner. \todo{Pitääkö vielä tarkemmin jäsennellä ominaisuuksia tutkimuskysymyksiin peilaten?}
 
+Compared to unrestricted side effects, monads and algebraic effects provide attractive way to manage side effects, that differs from status quo. Controlling side effects with monads and algebraic effects is undeniably more expressive and compositional than unrestricted side effects. This is underlined by how convenient it is to implement re-usable logic for effects, such as retries and timeouts, with monads and algebraic effects compared to unrestricted side effects.
 
-% ----------- Monads vs. Algebraic effects -----------
-% Monadic effects encode computation and values as just values
-% Algebraic effects separate values from computations (expressions vs. effects&handlers)
-% Effect composition
-%   - Monadic effects don't compose very nicely (monad transformers)
-%   - Language level algebraic effects usually compose very easily.
-% Both monadic and algebraic effect are RT and allow equational reasoning
-%   - Imperative functional programming p. 13, ch. 7.1
-% Effect composition is not commutative by nature, and neither of the techniques can avoid that
+Programs written with monadic or algebraic effects have a tendency to be more declarative than their imperative counterparts with unrestricted side effects. These features facilitate the implementation of modular and resilient programs that are easier to modify and  which respond to errors in clearly defined manner. Concurrency concerns can be reduced, and high-level concurrency APIs make it easier to implement correct and performant programs when compared to working with traditional imperative low-level primitives, such as threads.
 
-% ----------- Something about the maturity different technologies -----------
-% - Monadic effects are quite mature and many mainstream language has support for them
-% - "Programming with effects and handlers is in its infancy.", Do Be Do Be Do p. 1, ch. 1
-%   - No mainstream language supports algebraic effects and handlers natively.
-% - Algebraic effects could be utilized in implementation of multi-platform applications to abstract the underlying platform ?
-%   - "The ability of main is the external ability of the whole program. We can use it to configure the runtime to the execution context: is it a terminal? is it a phone? is it a browser? What will the user let us do?" - Do Be Do Be Do, p. 12, c. 6
+ZIO applies various theoretical principles from the academia to solve practical problems. It provides a monadic API for effects that takes inspiration from algebraic effects as well. ZIO is able to encode majority of the practically useful effects without monad transformers by using three type parameters. Although ZIO emphasizes heavily on easy adoption for practical problems, and is able to circumvent some of the problems related to monads, it still suffers from for monadic syntax and limited effect polymorphism.
+
+Despite this, ZIO is a worthy option for managing effects. It provides many state-of-the-art features like novel error handling principles and structured concurrency. \rly{ZIO is available for use today, and has been proven to be production ready.} There are many ZIO-native libraries and because Scala has interoperability with Java, has access to one of the largest library ecosystems.
 
 
-% ----------- Something about ZIO -----------
-%   - Takes inspiration from effect systems, algebraic effects and brings them into the world of monadic effects?
-%   - Maybe the absolute best (ergonomics & teachability) vs alg eff, but best that is currently available in mainstream lanuage  for production applications
-%   - Interesting to see how Unison will do
-% Hyvää pohdintaa ZIO:n heikkouksista:
-%   - https://www.reddit.com/r/scala/comments/szmg95/error_tracking_is_commercially_worthless/
+\todo{Onko seuraava kappale sopivassa kohdassa?} \todo{Pitäisikö muotoilla eri tavalla}
+A few aspects were intentionally left outside of the scope of this thesis. Testing is one of these subjects. It relates closely to practical software engineering and effects complicate testing significantly. Although monads and algebraic effects have properties that facilitate testing, they did not fit into the scope of the thesis. The practical adoption of more sophisticated methods for managing effects also relates to social aspects, such as how familiar or unfamiliar the method is perceived as. This thesis deliberately tries to avoid that topic. 
+
+\todo{Loppukaneetit?}
+
+% ZIO is a great example of what can be accomplished when mixing and applying different theoretical principles from the academia to solve practical problems. ZIO might very well be one of the most attractive methods to handle side effects available today. It remains to be seen whether technologies like ZIO will make their breakthrough in the industry as a way to manage side effects. Eventually it's a matter of trade-off; are sophisticated ways of managing side effects perceived useful enough to justify the initial education/learning required to comprehend them? In turn, is it possible to make these more sophisticated methods more accessible by making them feel more familiar to the average programmer, thus requiring less training?
+
+
+
 
 
 % ----------- Something about capture checking -----------
@@ -41,6 +31,7 @@
 % The idea of propagating capabilities inwards is similar to abilities in Frank and Unison
 
 
+% Hyvää pohdintaa ZIO:n heikkouksista: https://www.reddit.com/r/scala/comments/szmg95/error_tracking_is_commercially_worthless
 % https://gist.github.com/djspiewak/741c60cff4959feb5272d88306595771 (Monads are Fundamental, Syntax is the Problem)
 % Monads are a fundamental concept in modeling effectful computations as they define what sequential (the most natural and mandatory way of combining instructions) composition means
 % The monadic syntax on the other hand might not be the solution for large scale adoption. Other library or language-level techniques like CPS-transformations, compiler/language macros and libraries utilizing these might make programming with effects attractive to masses.
