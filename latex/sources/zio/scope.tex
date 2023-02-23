@@ -18,5 +18,5 @@ val program1 = ZIO.scoped { intResource *> stringResource }
 val program2 = ZIO.scoped(intResource) *> ZIO.scoped(stringResource)
 \end{minted}
 
-\caption{Operators for acquiring resources and providing a \inlinecode{Scope} in ZIO. Resources can be scoped to shared, or separate scopes. \label{zio:scope}}
+\caption{Operators for acquiring resources and providing a \inlinecode{Scope} in ZIO. Resources can be scoped to shared or separate scopes. \label{zio:scope}}
 \end{algorithm}
