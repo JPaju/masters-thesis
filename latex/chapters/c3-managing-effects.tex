@@ -33,7 +33,7 @@ In practice though we wish to simplify the types more and leave out ‘obvious�
 In designing Frank we have sought to maintain the benefits of effect polymorphism whilst avoiding the need to write effect variables in source code.
 \end{displayquote}}
 
-Languages with built-in effect systems~\cite{koka-lang, frank-lang, unison-lang, ocaml-lang} usually include algebraic effects and handlers, which are discussed in more detail in Section \ref{algebraic-effects}. Library-level support for effect systems is commonly based on monadic effects, which are discussed in Section \ref{monads}. Research for \emph{capability-based} effect system for Scala is ongoing, which is described in more detail in Section \ref{capability-effs} \todo{Muuta lausetta koska Capture checking vaihdettiin --> Capability based effects}.
+Languages with built-in effect systems~\cite{koka-lang, frank-lang, unison-lang, ocaml-lang} usually include algebraic effects and handlers, which are discussed in more detail in Section \ref{algebraic-effects}. Library-level support for effect systems is commonly based on monadic effects, which are discussed in Section \ref{monads}. \new{Another method for managing effects is \emph{capability-based} effects, which are described in more detail in Section \ref{capability-effs}.}
 
 
 
@@ -204,7 +204,7 @@ Similarly, looping and branching constructs require their own monadic versions, 
 
 
 \section{Algebraic effects and handlers} \label{algebraic-effects}
-Algebraic effects and handlers are one of the most recent approaches and fields of research on the subject of purely functional effectful programming. Algebraic effects take the approach that there are variety of different types of effects and every effect type has a finite set of \emph{operations} which define potentially impure capabilities. To interpret each operation, one must provide a \emph{handler} for every effectful operation. Operations define the interface of the effect, while handlers define the semantics of each effect and operation.
+Algebraic effects and handlers are one of the most recent approaches and fields of research on the subject of purely functional effectful programming. Algebraic effects take the approach that there are variety of different types of effects and every effect type has a finite set of \emph{operations} which define potentially impure abilities. To interpret each operation, one must provide a \emph{handler} for every effectful operation. Operations define the interface of the effect, while handlers define the semantics of each effect and operation.
 
 The notion of \textquote{algebraic operations} was introduced by \textcite{adequacy-for-alg-effs} in \citeyear{adequacy-for-alg-effs} and they refined the idea in \cite{comp-effs-and-ops} and \cite{alg-ops-gen-effs}. The idea of handlers accompanying algebraic effects was first presented by \textcite{handlers-of-alg-effs} in \citeyear{handlers-of-alg-effs} and later \textcite{handling-alg-effs} in \citeyear{handling-alg-effs}. The idea was similar to what Moggi discovered in \cite{notions-computations}, but \citeauthor{adequacy-for-alg-effs} considered operations to be primitive instead being derived from the monadic context.
 
@@ -280,37 +280,36 @@ Unlike monads, algebraic effects naturally compose with one another. An expressi
 \input{sources/alg-eff/polymorphism-koka}
 
 \new{
-Recently another approach of describing effects alongside algebraic effects and handlers has emerged called \emph{capabilities}. Capabilities are a novel approach that view effects differently compared to effect handlers; instead of denoting an expression with effects, they place requirement that the evaluation context contains a \emph{capability} for an effect. The distinction between the two may seem subtle, but capabilities naturally express effect polymorphism and thus allow for better developer ergonomics.~\cite{scoped-capabilities}
-}
-
-\new{
-Research on capabilities is ongoing and, to my knowledge, only Effekt~\cite{effekt-lang} and Scala with capture checking~\cite{capture-checking} take this approach. The proposals, however, are promising. With capabilities it should be possible to define an effectful \inlinecode{List.map} function that has signature: \inlinescala{def map(f : A => B): List [B]}, which is effect polymorphic but does not mention any effect variables in the type signature.~\cite{scoped-capabilities}
-}
-
-\new{
 Algebraic effects provide high expressive power and good modularity with effectful computations. Programs can be written in direct style, albeit handlers must be implemented in a special way. Algebraic effects also offer great composability between different effects and different effects can be combined freely. Effects can be locally introduced and eliminated. The usually included effect system helps with refactoring by ensuring that if an existing expression is refactored to have a new effect, it is handled appropriately.
 }
 
 \new{
-Unlike monads, algebraic effects do not offer equational reasoning and it is not always safe to replace expression with its value. Algebraic effects are still a active field of research with many open questions regarding, for example, shallow vs. deep handlers, single vs. multi-shot continuations, and multihandlers. Research on capability-based effects is in its infancy.
+Unlike monads, algebraic effects do not offer equational reasoning and it is not always safe to replace expression with its value. Algebraic effects are still a active field of research with many open questions regarding, for example, shallow vs. deep handlers, single vs. multi-shot continuations, and multihandlers.
 }
 
 
 
 \section{Capability based effects}\label{capability-effs}
-\todo{Pohjusta lukua ennen kun hypätään Effektiin ja capture checkingiin}
-Scala 3 is based on a research language called Dotty. The name Dotty comes from \acronym{DOT}{Dependent object types}, which are the theoretical foundation behind Scala 3~\cite{essence-of-dot}. While writing the thesis, a feature called Capture checking~\cite{capture-checking} was added to Dotty and later to Scala 3 as an experimental feature. The idea of capture checking is to enable effectful programming in direct style (discussed in Section \ref{monads:syntax}), yet tracking effects in the type system and providing strong static guarantees of the correctness of the program.
+\new{Recently another approach called \emph{capabilities} for describing effects instead algebraic effects and handlers has emerged. Capabilities are a novel approach that view effects differently compared to effect handlers; instead of denoting an expression with effects, they place requirement that the evaluation context must contain a \emph{capability} for an effect. The distinction between the two approaches may seem subtle, but capabilities would seem to provide better developer ergonomics by reducing the need to specify effect types in the code.~\cite{effects-as-capabilities}}
+
+\new{The idea of using capabilities to model effects is recent and research is in its infancy. Programming languages supporting them are experimental and rare. Effekt~\cite{effekt-lang} is a research language with capability based effects with handlers. There is also a research project to study how effects could be managed with capabilities in Scala 3.}
+
+\todo{Mainitse että alg effseissä efektit kulkevat expressioneista ulospäin, capability effecteissä taas ulkoa expressioneitä "kohti"}
+
+\new{
+The proposals of modeling effects with capabilities are promising. It should be possible to define effect polymorphic higher-order functions without the need to mention any effect variables in the type signature. For example, an effectful \inlinecode{List.map} function in Scala would have signature \inlinescala{def map(f : A => B): List [B]}, which is exactly the same as the current \inlinecode{map} in Scala. This is possible because \inlinecode{map} does not require any \emph{additional} capabilities in addition to capabilities required by \inlinecode{f}. If \inlinecode{f} requires any capabilities, the context in which \inlinecode{map} is called, must have/provide those capabilities. ~\cite{scoped-capabilities}
+}
+
+
+\subsection{Capture checking}
+Scala 3 is based on a research language called Dotty. The name Dotty comes from \acronym{DOT}{Dependent object types}, which are the theoretical foundation behind Scala 3~\cite{essence-of-dot}. While writing the thesis, an experimental and work-in-progress feature called Capture checking~\cite{capture-checking} was added to Dotty and later to Scala 3 nightly builds. Capture checking is a language feature based on capabilities. The idea of capture checking is to enable effectful programming in direct style (discussed in Section \ref{monads:syntax}), yet tracking effects in the type system and providing strong static guarantees of the correctness of the program.
 
 The initial version of capture checking is based on the work of \textcite{scoped-capabilities} on modeling polymorphic effects with capabilities. \citeauthor{scoped-capabilities} criticize the currently widely used ways of managing effects, such as Java's checked exceptions and monads, arguing that they lack in both usability and flexibility, and result in complex and duplicated code. They conclude that this is due to the transitive nature of effects in function call chains, combined with the classical type-systematic approach that \textquote{characterize the shape of values but not their free variables}, and suggest that modeling effects with capabilities may circumvent the problems they described.
 
 The goal of capture checking is to address many of the limitations in effectful programming. These include how to solve the "What color is your function" problem~\cite{what-color-is-your-function}, how to express effect polymorphism, how to combine manual and automatic memory management, how to express high-level concurrency and parallelism safely, and how to migrate already existing programs to use capture checking~\cite{odersky-twitter-caprese}. Active research on capture checking focuses on the usability aspect of static effect tracking, which likely will evolve around effect polymorphism, inferring the captured capabilities, direct style of programming, and in general minimizing the overall syntactic overhead.
 
-Capture checking aims to address effects such as throwing exceptions, IO, mutability, suspending computations and continuations. Resources are similar to effects but have some distinct properties. Resources, such as file handles, network connections, or memory must be acquired before use, and disposed afterward to possibly free up OS level resources. A resource has \emph{lifetime} in which it can be used, and the use of an already disposed resource should be prevented. Also, the sharing of a resource between multiple parties requires rules. Resource lifetimes and rules should preferably be enforced statically by the type system. There are close connections in capture checking and linear type systems, for example Rust lifetimes~\cite{rust-lifetimes}.
+Capture checking extends the idea of capabilities by tracking what capabilities are closed over, i.e. captured, by an expression. This means that a capability can be just a normal value, like any other variable in a program. In the context of capture checking, an expression is pure if it does not capture any capabilities. To make programming with capabilities easier, capabilities can be implicitly passed to expressions, instead of requiring one to explicitly thread capabilities through a program. The implicit system in Scala should be well suited for this task.
 
-The fundamental idea of capture checking differs from the traditional effect system approach, where the programmer annotates the effects that the execution of an expression might have. Capture checking, on the other hand, keeps track of the captured free variables in expressions. This means that a capability is a normal value, like any other variable in a program. Both resources and effects can similarly be modeled in this way. In the context of capture checking, an expression is pure if it does not capture, i.e. close over, any capability. To make programming with capabilities easier, capabilities can be implicitly passed to expressions, instead of requiring one to explicitly thread capabilities through a program. The implicit system in Scala should be well suited for this task.
-
-Capture checking can be enabled in Scala version 3.2.1 onwards with the compiler option \inlinecode{-Ycc}. The annotation \inlinescala{@capability} is used to mark a class/trait as capability that can be tracked. Captured capabilities are annotated before type annotation inside braces, e.g.: \inlinescala{val a: {c} Int = 1}, where value \inlinecode{a} is annotated with capability \inlinecode{c}. \refsource{scala:cc-eff-polymorphism} provides a larger example that defines a effect polymorphic \inlinecode{List.map} function and demonstrates its use. The syntax of capture checking is experimental and may be subject to change in the future.
-
-\input{sources/scala/cc-eff-polymorphism}
+Capture checking aims to address effects such as throwing exceptions, IO, mutability, suspending computations and continuations. Capture checking should also be applicable to resource handling. Resources, such as file handles, network connections, or memory must be acquired before use, and disposed afterward to free up allocated resources. A resource has \emph{lifetime} in which it can be used, and the use of an already disposed resource should be prevented. Resource lifetimes and rules should preferably be enforced statically by the type system. There are close connections in capture checking and linear type systems, for example Rust lifetimes~\cite{rust-lifetimes}.
 
 Odersky's research group is actively working on capabilities, as evidenced by a recent large grant~\cite{capture-checking-grant}. This research project is called Caprese (Capabilities for resources and effects), and its goal is a universal theory of resources and effects based on capabilities. It will be interesting to see the results of from Odersky's group in the coming years.
