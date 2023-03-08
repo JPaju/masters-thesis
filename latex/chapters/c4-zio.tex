@@ -146,8 +146,7 @@ The power of the environment type comes from the fact that it supports many diff
 
 
 \subsection{Similarity to algebraic effects}
-It may not be immediately obvious how ZIO is similar to algebraic effects and handlers.
-However, if we consider that each type in the environment intersection represents a specific effect, adding or interacting with environmental requirements represents an effectful operation, and removing environmental requirement with \inlinecode{ZLayer} represents handling an effect, the similarity is imminent.
+It may not be immediately obvious how ZIO is similar to algebraic effects and handlers. However, if we consider that each type in the environment intersection represents a specific effect, adding or interacting with environmental requirements represents an effectful operation, and removing environmental requirement with \inlinecode{ZLayer} represents handling an effect, the similarity is imminent.
 
 Like handlers in algebraic effects, \inlinecode{ZLayer}s can handle (or discharge) the effect by removing it altogether, or it can translate one effect into another. Similar to handlers in algebraic effects, \inlinecode{ZLayer}s commonly form a graph of dependencies between other \inlinecode{ZLayer}s. ZIO environment composes in similar way as effects in a language that natively supports algebraic effects and handlers, such as Unison.
 
@@ -155,7 +154,7 @@ With \inlinecode{ZLayer}s it is possible to define a polymorphic handler, which 
 
 \input{sources/zio/zlayer-eff-handler}
 
-Effect polymorphism (demonstrated in Listings \ref{monad:mapm}, \ref{alg-eff:polymorphism-unison}, \ref{alg-eff:polymorphism-koka}, and \ref{scala:cc-eff-polymorphism}), however, is limited since every ZIO computation is evaluated in monadic context. Also handlers in ZIO are not as expressive, since they do not receive a continuation to the rest of the program, like algebraic effects handlers do.
+Effect polymorphism (demonstrated in Listings \ref{monad:mapm}, \ref{alg-eff:polymorphism-unison} and \ref{alg-eff:polymorphism-koka}), however, is limited since every ZIO computation is evaluated in monadic context. Also handlers in ZIO are not as expressive, since they do not receive a continuation to the rest of the program, like algebraic effects handlers do.
 
 
 \section{Resource management} \label{zio:resource-management}
@@ -211,23 +210,13 @@ By default parallel combinators in ZIO have unbounded parallelism, which means t
 
 \input{sources/zio/limit-parallelism}
 
-Conclusions: \todo{Kirjoita näistä kappale}
-- Pohjimmiltaan monad, joten pääasiassa samat edut ja puutteet
-- Parantaa tiettyjä monadien ongelmia (transformerit, tyyppipäättely, nimeämiskäytännöt)
-- Concurrency (high-level declarative API, cooperative scheduling: reduced context switches and semantic blocking)
 
-\todo{Kokoa yhteen huomioita ZIO:sta ?}
-% Expressivity
-% Composability
-% Type safety
-% Comprehensibility
-% Interoperability with existing libraries (even Java)
-% Although quite new, few years of production experience from large companies
+\section{Summary of ZIO}
 
+\new{ZIO applies various theoretical principles from the academia to solve practical problems. Essentially it is a IO monad and inherits much of their properties, both good and bad. Effects can be described in a referentially transparent way, which has high expressivity and good refactoring characteristics. Like with all monads, encoding multiple effects is not straight-forward and programs must be written in monadic syntax.\footnote{Direct syntax can be achieved by utilizing compiler macros to rewrite direct style to monadic style at compile time, e.g https://zio.dev/zio-direct/}}
 
+\new{However, ZIO is able to circumvent some of the problems related traditionally to monads, such as impaired type inference and encoding multiple effects either by nesting monads or using monad transformers. The majority of the practically useful effects can be encoded by using a monad with three type parameters. First two parameters are used to include the capabilities of IO and Either monads. The third parameter is the environment that allows to encode other, possibly overlapping, effects such as Reader and State. The environment takes inspiration from algebraic effects and handlers, and is able to encode similar semantics. The environment also lays the basics for dependency injection in ZIO.}
 
-% ZIO applies various theoretical principles from the academia to solve practical problems. It provides a monadic API for effects that takes inspiration from algebraic effects as well. ZIO is able to encode majority of the practically useful effects without monad transformers by using three type parameters. Although ZIO emphasizes heavily on easy adoption for practical problems, and is able to circumvent some of the problems related to monads, it still suffers from for monadic syntax and limited effect polymorphism.
+\new{ZIO takes a novel approach with its error model, which enables to express errors in a referentially transparent way and provides enormous expressive power. The error model is capable of encoding asynchronous and concurrent errors that are in the core of modern applications. The concurrency model is principled and enables the programmer to express concurrency concerns in a high-level. When multiple effects are encoded in a single monad, IO, errors and concurrency compose together in a natural and type safe way.}
 
-% Despite this, ZIO is a worthy option for managing effects. It provides many state-of-the-art features like novel error handling principles and structured concurrency. \rly{ZIO is available for use today, and has been proven to be production ready.} There are many ZIO-native libraries and because Scala has interoperability with Java, has access to one of the largest library ecosystems.
-
-% ZIO is a great example of what can be accomplished when mixing and applying different theoretical principles from the academia to solve practical problems. ZIO might very well be one of the most attractive methods to handle side effects available today. It remains to be seen whether technologies like ZIO will make their breakthrough in the industry as a way to manage side effects. Eventually it's a matter of trade-off; are sophisticated ways of managing side effects perceived useful enough to justify the initial education/learning required to comprehend them? In turn, is it possible to make these more sophisticated methods more accessible by making them feel more familiar to the average programmer, thus requiring less training?
+\new{ZIO provides many state-of-the-art features with focus on practical usability. Although the library is quite new, it has few years of production experience from large companies. It has a comprehensive and constantly growing ecosystem. Because ZIO is built with Scala, which is a JVM language, ZIO programs also have access to Java libraries that are one of the largest open source ecosystems today. For these reasons, ZIO is one of the most viable ways to develop modern applications today.}
