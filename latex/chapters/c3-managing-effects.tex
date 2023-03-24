@@ -1,6 +1,9 @@
-\chapter{Managing effects}
+\chapter{Approaches for managing effects}
 
-\section{Effect systems}\label{effects:effect-systems}
+This chapter presents different approaches of managing effects and how these approaches manifest as programming language features. These approaches include effect systems and unrestricted side effects and, as well as more advanced techniques such as monadic effects, algebraic effects and handlers and capability based effects.
+
+
+\section{Effect systems}\label{effect-systems}
 The purpose of an effect system is to allow mixing effectful and pure code safely. The idea of an effect system is very similar to that of a type system. In some programming languages, a type system can be used to implement an effect system, such as in Java or C\#, but in others they are two separate systems, such as in Unison~\cite{unison-lang} or Koka~\cite{koka-lang}.
 
 A type system sets the rules according to which functions, parameters, expressions, and, in some cases, objects can be composed. A static type system checks that these rules are obeyed before the program is run. An effect system enforces rules regarding the effects that expressions and statements have, and how these effects can interact with each other. Similarly to type systems, these interactions are checked statically at compile-time.
@@ -33,7 +36,7 @@ In practice though we wish to simplify the types more and leave out ‘obvious�
 In designing Frank we have sought to maintain the benefits of effect polymorphism whilst avoiding the need to write effect variables in source code.
 \end{displayquote}}
 
-Languages with built-in effect systems~\cite{koka-lang, frank-lang, unison-lang, ocaml-lang} usually include algebraic effects and handlers, which are discussed in more detail in Section \ref{algebraic-effects}. Library-level support for effect systems is commonly based on monadic effects, which are discussed in Section \ref{monads}. \new{Another method for managing effects is \emph{capability-based} effects, which are described in more detail in Section \ref{capability-effs}.}
+Languages with built-in effect systems~\cite{koka-lang, frank-lang, unison-lang, ocaml-lang} usually include algebraic effects and handlers, which are discussed in more detail in Section \ref{algebraic-effects}. Library-level support for effect systems is commonly based on monadic effects, which are discussed in Section \ref{monads}. \new{Another approach for managing effects is \emph{capability-based} effects, which are described in more detail in Section \ref{capability-effs}.}
 
 
 
@@ -46,7 +49,7 @@ Languages with built-in effect systems~\cite{koka-lang, frank-lang, unison-lang,
 
 \new{However, the programmer is solely responsible for managing all the effects and making sure that they are compatible with each other. The language is not able to provide help in ensuring the rational use of effects. This way of handling side effects is also not particularly expressive or modular. Creating reusable functions for common side-effecting operations, such as repeating an effect, defining a timeout or retrying, is hard or at least clumsy.}
 
-\new{\refsource{unrestricted-effs} shows a higher-order function \inlinecode{map} for the \inlinecode{List} datatype, and demonstrates how it can be used with pure and effectful mapping functions. A similar function is used in upcoming Sections as an example to demonstrate how such effectful mapping function can be implemented with other methods for managing effects.}
+\new{\refsource{unrestricted-effs} shows a higher-order function \inlinecode{map} for the \inlinecode{List} datatype, and demonstrates how it can be used with pure and effectful mapping functions. A similar function is used in upcoming Sections as an example to demonstrate how such effectful mapping function can be implemented with other approaches for managing effects.}
 
 \input{sources/unrestricted-effs}
 
@@ -97,7 +100,7 @@ In practice the \inlinecode{Either} data type is commonly implemented as a sum t
 
 In order for \inlinecode{Either} to better support exception handling, several convenience functions are commonly defined for it. These functions are more specific than the monad structure admits, since they operate in a domain where the computation might produce different values. Next a few of the these functions are introduced in more detail.
 
-One typical scenario in error handling is to define a fallback computation to be performed if the actual computation is unsuccessful. In Haskell this is achieved by utilizing an associative binary operation in \inlinecode{Semigroup} type class, which is defined as \inlinehaskell{(<>) :: Either e a -> Either e a -> Either e a}. In Scala similar semantics are made possible by \inlinecode{orElse} -method on an \inlinecode{Either} object itself, defined as \inlinescala{def orElse[E1, A1](or: => Either[E1, A1]): Either[E1, A | A1]}. \rly{Because Scala 3 has union and subtypes, it is possible for the fallback computation to have different exception and success types as the original \inlinecode{Either}.}
+One typical scenario in error handling is to define a fallback computation to be performed if the actual computation is unsuccessful. In Haskell this is achieved by utilizing an associative binary operation in \inlinecode{Semigroup} type class, which is defined as \inlinehaskell{(<>) :: Either e a -> Either e a -> Either e a}. In Scala similar semantics are made possible by \inlinecode{orElse} -method on an \inlinecode{Either} data type itself, with type signature: \inlinescala{def orElse[E1, A1](or: => Either[E1, A1]): Either[E1, A | A1]}. Because Scala 3 has union and subtypes, it is possible for the fallback computation to have different exception and success types as the original \inlinecode{Either}.
 
 Another common operation in error handling is to transform the error type. There are some differences in the implementation of this functionality depending on the language. Haskell has \inlinecode{BiFunctor} type class where the function \inlinecode{first} allows applying transformations to the left side of \inlinecode{Either}. Scala has \inlinecode{LeftProjection}, which allows to perform monadic operations on the (left) error "channel" of the \inlinecode{Either}. \inlinecode{Either} in Scala also has \inlinescala{def swap: Either[A, E]} method that transforms a \inlinecode{Right} to \inlinecode{Left} and vice versa.
 
@@ -132,7 +135,7 @@ The IO monad is fundamentally different from previously introduced monads, which
 
 To actually perform the side effects IO describes, there must be a way to interpret IO values into side effects they describe. This is usually the responsibility of the particular \emph{runtime system}. In a purely functional programming language, the runtime cannot be implemented in the language itself. Impure languages have more flexibility in the way of implementing the runtime system, as well as how to encode the IO monad in the first place. Flexibility is useful: modern runtime systems with industry adoption are enormously complex and sophisticated, so that they can utilize the hardware as efficiently as possible to achieve the best performance possible.
 
-Performance is really important, since the use of IO monad in a program is intrusive: any expression that references another expression that is evaluated in IO, must also be evaluated in IO. This is to be expected as there is no way to "peel off" the IO wrapper from an expression in a referentially transparent way, since that would mean executing the side effect. In programs written with the IO monad, the runtime system can be seen as the central authority, as described in Chapter \ref{Effects}.
+Performance is really important, since the use of IO monad in a program is intrusive: any expression that references another expression that is evaluated in IO, must also be evaluated in IO. This is to be expected as there is no way to "peel off" the IO wrapper from an expression in a referentially transparent way, since that would mean executing the side effect. In programs written with the IO monad, the runtime system can be seen as the central authority, as described in Section \ref{effects}.
 
 
 \subsection{Syntax} \label{monads:syntax}
@@ -220,7 +223,7 @@ Unison is a programming language with several out-of-the-ordinary features, incl
 \subsection{Theory of handlers}
 When program encounters an effect operation, its execution is halted, and the control is transferred to the closest handler provided for that specific operation. Handler may also receive some parameters from the program in the process of taking over the execution from the program. At this point, it is solely the responsibility of the handler to decide how the program will continue.
 
-The idea of effects being interaction between sub-programs and central authority, described in Chapter \ref{Effects}, fits algebraic effects naturally. The parts of the program that call effect operations of algebraic effects are the sub-program and the handlers are the central authority. \new{Compared to monads, algebraic effects take a different approach. Pure values are separate from effectful computations, which are defined as effect operations and performed by the handlers.} The concept is powerful enough to implement all previously mentioned monads and even many of the more complicated control structures, built-in to many languages, like try-catch, iterators, and async/await.~\cite{alg-effs-for-fp}
+The idea of effects being interaction between sub-programs and central authority, described in Section \ref{effects}, fits algebraic effects naturally. The parts of the program that call effect operations of algebraic effects are the sub-program and the handlers are the central authority. \new{Compared to monads, algebraic effects take a different approach. Pure values are separate from effectful computations, which are defined as effect operations and performed by the handlers.} The concept is powerful enough to implement all previously mentioned monads and even many of the more complicated control structures, built-in to many languages, like try-catch, iterators, and async/await.~\cite{alg-effs-for-fp}
 
 A common way of handling an effect is to transform it to another effect or data type. Many times higher-level effects are implemented in terms of lower level effects, and finally the most primitive effects, such as IO, are provided by runtime. Eventually this forms a graph of effects and handlers depending on each other~\cite{intro-to-alg-eff}. Providing an expression with an effect handler it requires is said to \textquote{discharge} the effect from the expression. In order to safely evaluate an expression all of its effects must be discharged.
 
@@ -263,7 +266,7 @@ The handler resumes the program multiple times, two times for every \inlinecode{
 
 
 \subsection{Effect typing}
-Programming with algebraic effects clearly separates effectful computations from values, which makes a language with algebraic effects a good candidate for separate type \textbf{and} effect systems, which were discussed in Section \ref{effects:effect-systems}. All effectful expressions must be provided with corresponding handlers before execution, and by utilizing an effect system, this check can be made statically. Algebraic effects themselves do not require a static type system, but practically all current programming languages with first-class algebraic effects are equipped with an effect system.
+Programming with algebraic effects clearly separates effectful computations from values, which makes a language with algebraic effects a good candidate for separate type \textbf{and} effect systems, which were discussed in Section \ref{effect-systems}. All effectful expressions must be provided with corresponding handlers before execution, and by utilizing an effect system, this check can be made statically. Algebraic effects themselves do not require a static type system, but practically all current programming languages with first-class algebraic effects are equipped with an effect system.
 
 When an expression references an effectful operation, the effect system adds that effect to the set of effects associated with the expression. On the other hand, when an effect handler is provided for an expression, the effect system can remove the effect from the set of effects for that specific expression, and possibly add new effects if the implementation of the handler references other effects. Usually algebraic effects could be inferred and are not required to be mentioned in the source code.
 
@@ -294,10 +297,8 @@ Unlike monads, algebraic effects do not offer equational reasoning and it is not
 
 \new{The idea of using capabilities to model effects is recent and research is in its infancy. Programming languages supporting them are experimental and rare. Effekt~\cite{effekt-lang} is a research language with capability based effects with handlers. There is also a research project to study how effects could be managed with capabilities in Scala 3.}
 
-\todo{Mainitse että alg effseissä efektit kulkevat expressioneista ulospäin, capability effecteissä taas ulkoa expressioneitä "kohti"}
-
 \new{
-The proposals of modeling effects with capabilities are promising. It should be possible to define effect polymorphic higher-order functions without the need to mention any effect variables in the type signature. For example, an effectful \inlinecode{List.map} function in Scala would have signature \inlinescala{def map(f : A => B): List [B]}, which is exactly the same as the current \inlinecode{map} in Scala. This is possible because \inlinecode{map} does not require any \emph{additional} capabilities in addition to capabilities required by \inlinecode{f}. If \inlinecode{f} requires any capabilities, the context in which \inlinecode{map} is called, must have/provide those capabilities. ~\cite{scoped-capabilities}
+The proposals of modeling effects with capabilities are promising. It can be thought of that algebraic effects view effects as rising \emph{outwards} from effectful expressions, while capability based effects view effects (more specifically, capabilities) as going \emph{inwards} from the surrounding context towards effectful expressions. It should be possible to define effect polymorphic higher-order functions without the need to mention any effect variables in the type signature. For example, an effectful \inlinecode{List.map} function in Scala would have signature \inlinescala{def map(f : A => B): List [B]}, which is exactly the same as the current \inlinecode{map} in Scala. This is possible because \inlinecode{map} does not require any \emph{additional} capabilities in addition to capabilities required by \inlinecode{f}. If \inlinecode{f} requires any capabilities, the context in which \inlinecode{map} is called, must provide those capabilities to \inlinecode{f}.~\cite{scoped-capabilities}
 }
 
 
