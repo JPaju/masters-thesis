@@ -1,0 +1,37 @@
+package fi.jpaju.thesis.casestudy
+
+import zio.*
+
+class ApikeyService(keyGen: KeyGen, repo: ApikeyRepository):
+  def create(description: String): IO[InvalidDescription, Apikey] =
+    type CreateError = DuplicateApikey | InvalidDescription
+
+    val createApikey: IO[CreateError, Apikey] = for
+      validDesc   <- validateDesc(description)
+      token       <- keyGen.generateKey
+      savedApikey <- repo.add(Apikey(validDesc, token))
+    yield savedApikey
+
+    // Retry only in the case of DuplicateApikey and at most 10 times
+    val policy = Schedule.recurWhile[CreateError] {
+      case DuplicateApikey(_)    => true
+      case InvalidDescription(_) => false
+    } && Schedule.recurs(10)
+
+    // Apply the retry policy to the ZIO that creates the apikey
+    val retried: IO[CreateError, Apikey] = createApikey.retry(policy)
+
+    // Change the error type of the retried ZIO:
+    // IO[CreateError, Apikey] => IO[InvalidDescription, Apikey]
+    // By converting all errors to defects except InvalidDescription
+    retried.refineOrDieWith { case descError: InvalidDescription =>
+      descError
+    }(otherErr => RuntimeException(s"Defect in create: $otherErr"))
+
+  def validateDesc(str: String): IO[InvalidDescription, String] = ???
+
+  def revoke(apikey: Apikey): IO[ApikeyNotFound, Unit] = ???
+
+object ApikeyService:
+  val layer: URLayer[KeyGen & ApikeyRepository, ApikeyService] =
+    ???

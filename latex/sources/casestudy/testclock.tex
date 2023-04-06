@@ -1,0 +1,28 @@
+\begin{algorithm}
+
+\begin{minted}{scala}
+test("revoke should set current time as the revokation time") {
+  val fixedTime: Instant = Instant.parse("2023-03-30T19:34:28Z")
+
+  for
+    apikeyService <- ZIO.service[ApikeyService]
+    apikey        <- apikeyService.create("test apikey description")
+
+    _ <- TestClock.setTime(fixedTime) // Set current time
+    _ <- apikeyService.revoke(apikey) // Perform logic under test
+
+    // This is verifiable using the provided in-memory repository
+    allApikeys    <- FakeApikeyRepository.getAll
+    revokedApikey <- ZIO.getOrFail(allApikeys.find(_ == apikey))
+
+  // Assert that the fixed time was used as the revokation time
+  yield assertTrue(revokedApikey.isRevokedAt(fixedTime))
+}.provide(
+  ApikeyService.layer,
+  FakeApikeyRepository.layer,
+  FakeKeyGen.layer,
+) // Test is configured with real ApikeyService and fake dependencies
+\end{minted}
+
+\caption{ZIO \inlinecode{TestClock} facilitates testing of code that uses the current time. \inlinecode{ZLayers} enable to inject desired dependencies to the service under test. \label{casestudy:testclock}}
+\end{algorithm}

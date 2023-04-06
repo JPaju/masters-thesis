@@ -22,10 +22,17 @@ ThisBuild / scalacOptions ++=
 
 javacOptions ++= Seq("-source", "17")
 
-val zioVersion = "2.0.10"
+val zioVersion        = "2.0.10"
+val postgresqlVersion = "42.2.24"
 
 name    := "masters-thesis"
 version := "0.1.0"
 libraryDependencies ++= Seq(
-  "dev.zio" %% "zio" % zioVersion
+  "dev.zio"       %% "zio"        % zioVersion,
+  "org.postgresql" % "postgresql" % postgresqlVersion,
 )
+
+libraryDependencies ++= Seq(
+  "dev.zio" %% "zio-test"     % zioVersion,
+  "dev.zio" %% "zio-test-sbt" % zioVersion,
+).map(_ % Test)

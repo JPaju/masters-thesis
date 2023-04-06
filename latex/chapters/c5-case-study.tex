@@ -1,12 +1,75 @@
 \chapter{Case study}
-\section{Design}
+This chapter studies the practical applicability of ZIO in a development of a server application for Qlik Sense business intelligence tool. First the purpose and the background of the project is introduced along with a quick overview of Qlik Sense. The evaluation of ZIO is divided into several sections, which are similar to those in Chapter \ref{zio} about ZIO. The first section examines error handling with ZIO and its usability in the development process. The second section discusses the use of dependency injection with ZIO. The third section looks at testing and how ZIO facilitates the implementation of automated tests. The fourth section covers the role of ZIO's concurrency constructs in the development of the application. The last section analyzes the overall usability of ZIO in application development.
 
-\section{Implementation}
+The application is backend for a web application, and exposes its functionality via HTTP interface. The purpose of the application is to manage control parameters of the Qlik Sense business intelligence tool. A browser-based user interface has also been developed for the application, but it is not within the scope of this thesis.
+
+Qlik Sense is a data analytics software with Extract, Transform and Load (ETL), data modeling and interactive data visualization capabilities. Qlik Sense is commonly used to create dashboards that display data from various sources in a single easy-to-consume format. The user of the dashboard can filter the data and export reports in various formats such as PDF, Excel or via email message. Qlik Sense has various deployment options including on-premises servers, Kubernetes and more recent Cloud/SaaS offering.
+
+It is often desired to parameterize the operation of Qlik Sense applications, such as URLs, calculation formulas and titles to display. However, Qlik does not have a built-in mechanism to maintain such configuration, and many Qlik applications end up managing the configuration in an Excel file or similar. This method is often perceived as suboptimal due to usability challenges for non-technical users, limited possibilities to manage user rights, and deficiencies in validating the correct structure of the configuration making it error prone. A table as a configuration format is also limited in describing for example object or array structures.
+
+For these reasons, a custom web application for managing Qlik Sense configuration was developed. The custom solution exposes a HTTP/JSON API that Qlik Sense applications can read configuration values from. Authentication is implemented with API key, which simply is a token provided by the client in the HTTP headers. The configuration format and values can be managed from a graphical user interface by Qlik application developers.
+
+Application code was divided roughly into three layers/modules: core, persistence and HTTP.
+Core contains all the business logic and interface definitions that are implemented in the persistence layer. HTTP layer is responsible for exposing the public API of the application. This requires decoding HTTP requests and handling authentication logic. Persistence layer implements interfaces defined by the core and HTTP layers. It translates domain models into relational format and communicates with PostgreSQL database, which is used for persistence.
+
+The application utilizes many libraries from the ZIO ecosystem: zio-protoquill for database interaction, Tapir with zio-http for the HTTP server, zio-json for JSON (de)serialization, zio-config for reading and parsing the application configuration, zio-logging for logging and zio-test with zio-testcontainers for testing. The server application is packaged as a Docker container to accommodate the different deployment options of Qlik Sense application.
+
+
+\section{Error handling}
+The ZIO error model was proven to be suitable for many situations. Due to the greenfield nature of the project, the development process involved a significant amount of experimentation and refactoring. Changes could be done with confidence because of statically typed errors that trigger a compile error if an error case was accidentally left unhandled. Adding a new error case to a method is easy because the compiler errors indicate where additional error handling is required.
+
+Converting errors between different layers of the application turned out to be easy and convenient. \refsource{casestudy:converterrors} contains part of the \inlinecode{ApikeyRepository} implementation that stores API keys in a PostgreSQL database. Because every API key value must be unique, adding a new API key can fail if the database already contains an API key with the same value. The possibility of failure is reflected in the return type of the \inlinecode{add} method: \inlinescala{IO[DuplicateApikey, Unit]}. Running an insert query against the database can fail with \inlinecode{SQLException}, which must be converted to \inlinecode{DuplicateApikey} or to a ZIO defect, depending on the specific \inlinecode{SQLException} received. The \inlinecode{catchAll} operator enables to express this logic clearly.
+
+\input{sources/casestudy/convert-errors}
+
+Retrying capabilities of ZIO also proved to be useful. The data model for API key contains a secret token and a description. In the application \inlinecode{ApikeyService} is responsible of creating a new API key. The user can specify a description for the key and \inlinecode{ApikeyService} is responsible of creating token and persisting the new API key based. The process of creating new API key consists of validating that the provided description meets requirements, generating a new token, persisting the new API key and finally returning the created and persisted API key. The service delegates the creation of the token to \inlinecode{KeyGenerator} and persistence to \inlinecode{ApikeyRepository}.
+
+\input{sources/casestudy/retries}
+
+As demonstrated in the \refsource{casestudy:converterrors}, persisting the API key can fail if the token already exists in the database. A desired way to react to this situation is by creating a new token and trying to persist API key with the new token again. However, it is desirable not to retry persisting new API key indefinetely. If persisting a new API key fails a couple times in a row with \inlinecode{DuplicateApikey}, there is probably a bug in the code, and it should be considered as a defect. \refsource{casestudy:retries} shows \inlinecode{ApikeyService.create} method that implements the described logic with ZIO. A ZIO \inlinecode{Schedule} is used to describe the retry policy and \inlinecode{refineOrDieWith} is used to convert \inlinecode{DuplicateApikey} to defect if retries did not resolve the error.
+
+
+\section{Dependency injection}
+The services in the application were implemented by using constructor-based dependency injection. If a service requires another service, it will receive the dependency as a constructor argument. This can be noticed in Listings \ref{casestudy:converterrors} and \ref{casestudy:retries} where dependencies are received as constructor arguments. Each service defines a \inlinecode{ZLayer} in its companion object, which can be used to construct that specific service. Dependencies for the program are provided in the main method by referencing \inlinecode{ZLayer} of each required service. \refsource{casestudy:dependencyinjection} demonstrates how the layers are provided.
+
+ZIO resolves and constructs the dependency graph at compile time, as described in Section \ref{zio:environment:zlayer}. If a required dependency is not provided, ZIO reports a developer-friendly error message explaining what dependency is missing. This compile time verification proved to be valuable in the development process when new dependencies were added to services. Forgetting to provide a newly-added dependency was brought to the attention of the developer in a clear format before the application could even be started. This can be, for example, demonstrated by commenting out \inlinecode{KeyGen.layer} and \inlinecode{Database.dataSourceLayer} from \refsource{casestudy:dependencyinjection}. The compiler reports an error shown in Figure \ref{fig:zlayer-provide-error}, which clearly states what dependencies are missing and which services require them.
+
+\input{sources/casestudy/dependencyinjection}
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{images/zlayer-provide-error.png}
+    \caption{Error message produced by ZIO when required \inlinecode{ZLayer} is not provided.}
+    \label{fig:zlayer-provide-error}
+\end{figure}
+
+
+\section{Testing}
+The application contains several automated tests. ZIO has its own test library, zio-test, which was used for testing. There types of tests were written for the application: unit tests, integration tests and system tests. Unit tests run in-memory and exercise a single class or function. Integration tests ensure the correct functionality of multiple services together and may include out-of-process dependencies such as databases. Repository classes that interact with PostgreSQL database were tested with integration tests that used a database instance running in a Docker container. In system tests the application is tested as a whole, which in this case means that the configuration is read from environment variables and the database is running in a Docker container, similar to integration tests. System tests treat the application as a black box and tests only interact with its public API, which in this case is the HTTP endpoints.
+
+Dependency injection in zio-test is managed \inlinecode{ZLayer}s. This makes it easy to configure the test in a way that the class under test can be provided with fake implementations of its dependencies. ZIO has also built-in \emph{test services} that make it possible to write deterministic tests that interact with console, time/clock, random generator and environment variables. This ability to effortlessly test interaction with time and environment variables in a controlled manner proved to be valuable.
+
+\refsource{casestudy:testclock} shows a test for \inlinecode{ApikeyService} that verifies the revokation time of an API key is set to the current time. In the test a \inlinecode{TestClock} is used to fix the current time visible to the service, and then assert that the hardcoded time was actually used. The example also demonstrates how layers can be used to provide dependencies to the class under test.
+
+\input{sources/casestudy/testclock}
+
+The biggest advantage of ZIO test services were however the possibility to configure the environment variables in system tests. The application reads its configuration, such as database connection string and HTTP port number, from environment variables. Traditionally testing how a program interacts with environment variables is cumbersome and error prone to say the least. ZIO \inlinecode{TestSystem} allows to set environment variables easily before the application is started and it tries to read its configuration. \refsource{casestudy:testsystem} shows a layer that requires environment variables that will be set before the application is started and kept running in the background.
+
+\input{sources/casestudy/testsystem}
+
+ZIO test services do not provide a way to control access to the file system, which is also quite hard to test because of similar reasons as environment variables. Even though the application in its current form does not use the file system, it would be nice if ZIO provided tools to test such interactions.
+
+
+\section{Concurrency}
+The application in its current form is quite simple, and thus ZIO's concurrency features were not needed much. This is probably partly due to the decision to use a relational database, which is able to perform complex query logic in a single query. In other projects there have been situations where it is necessary/beneficial to achieve concurrency when fetching data from multiple sources and combining the data in the application code. The situation is similar with NoSQL databases, which are usually not capable of doing joins in the database, thus forcing the joining logic to happen in the application code.
+
+Other situations where ZIO's concurrency features could be useful is when the application has other functionalities besides just a HTTP interface. These other features could be scheduled batch jobs running in the background such as updating and invalidating caches or reporting metrics. Another common use case is asynchronous messaging where the application must listen to new messages in the background and react accordingly. ZIO's concurrency and scheduling capabilities are well suited for these kind of use cases.
+
 
 \section{Analysis}
-\begin{itemize}
-    \item Mitä saatiin aikaan? (Analysoi tuloksia ja matkaa mahdollisesti tarkastikin)
-    \item Mitä olennaisia asioita kohdattiin?
-    \item Hyötyjä / Haittoja?
-\end{itemize}
+The case study revealed that using ZIO may initially slow down development, but this is only temporary and lasts for days or about one week. While the simplest tasks may sometimes be slightly more challenging to implement with ZIO, the benefits become apparent when dealing with more complex problems. The use of ZIO made it easier to tackle more difficult problems that may typically be ignored in imperative languages due to the time and effort required to solve them, such as examples in Listings \ref{casestudy:converterrors} and \ref{casestudy:retries} demonstrate. Some tasks that are unreasonably difficult (or even practically impossible) in mainstream languages are possible, often simple, with ZIO.
+
+Acknowledging the ever changing and unpredictable nature of software projects, building new projects on strong foundations is desirable. This makes it possible to customize and evolve the software as effortlessly as possible. ZIO proved to be a robust foundation for developing applications that can confidently handle even the challenging problems. Refactoring is easy and could be done with confidence because ZIO programs are referentially transparent.
+
+Developers with no previous experience with monadic effects or effects as values may find it difficult to comprehend programs written with ZIO. The programmer must be able to adopt a functional mindset in order to use ZIO (or other monadic effects) effectively.
     
