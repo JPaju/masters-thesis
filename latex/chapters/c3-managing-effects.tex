@@ -149,7 +149,7 @@ A technique for programming in direct style with monadic effects while preservin
 \subsection{Monad Laws} \label{monads:laws}
 For a data type to form a monad, it must adhere to three laws, also known as the monad laws: associativity, left identity, and right identity. These laws are simply rules that the operations on a data type must follow. The laws precisely define the semantics of a data type and ensure that desired semantics are preserved when refactoring. In addition to their signatures, laws are what separate one algebraic structure from another.
 To be precise, an algebraic structure is totally defined by its operations and the laws that govern these operations. Thus the definition of monad is an algebraic structure with two operations
-\inlinecode{pure} and \inlinecode{bind}, obeying the laws of associativity, left identity, and right identity, nothing more, nothing less.~\cite{fp-in-scala} \todo{Lisää tähän lause joka alleviivaa monad-lakien käytännön hyötyjä}
+\inlinecode{pure} and \inlinecode{bind}, obeying the laws of associativity, left identity, and right identity, nothing more, nothing less.~\cite{fp-in-scala}
 
 \input{sources/monad/laws/associativity}
 
