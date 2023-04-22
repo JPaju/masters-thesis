@@ -50,7 +50,7 @@
 \DeclareStringOption[ieee]{bibstyle}         % document's bibliography style
 \DeclareStringOption[-1]{pagecountdelta}     % workaround for bugs in the app page count
 \DeclareStringOption[a-2b,mathxmp]{pdfaconformance}  % PDF-A conformance level (a-1b, a-2b, a-2u, a-3b, a-3u, or 'none')
-\DeclareStringOption[split]{biburlbreak}     % how to handle long urls in bibliography ('ragged', 'split', or 'none')
+\DeclareStringOption[ragged]{biburlbreak}     % how to handle long urls in bibliography ('ragged', 'split', or 'none')
 \DeclareStringOption[times]{mainfont}        % pdftex: main font package (lmodern, fourier, ...), special value: 'times', 'none'
                                              % xetex: main font name (Arial, Comic Sans, ...), special value: 'times' enables Times New Roman, 'none'
 \DeclareBoolOption[true]{hidechapters}       % hide the verbose chapter title text
