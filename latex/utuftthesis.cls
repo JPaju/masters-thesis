@@ -307,7 +307,7 @@
     \case{tkk}{\langchoose{#1}{TkK-tutkielma}{Bachelor's Thesis}}%
     \case{luk}{\langchoose{#1}{LuK-tutkielma}{Bachelor's Thesis}}%
     \case{gradu}{\langchoose{#1}{Pro gradu -tutkielma}{Master of Science Thesis}}%
-    \case{di}{\langchoose{#1}{Diplomityö}{Master of Science Thesis}}%
+    \case{di}{\langchoose{#1}{Diplomityö}{Master of Science in Technology Thesis}}%
     \default{\p@btype}%
   \end{switch}}
 
