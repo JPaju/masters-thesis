@@ -3,9 +3,10 @@
 \begin{minted}{scala}
 trait ZLayer[-RIn, +E, +ROut]:
   // Environmental requirement of type ROut is removed, and RIn is
-  // added to the ZIO received as parameter. Real implementation also
-  // changes error type, but it is skipped here for brevity
-  def apply[R, E1, A](zio: ZIO[ROut & R, E1, A]): ZIO[RIn & R, E1, A]
+  // added to the ZIO received as parameter.
+  def apply[R, E1, A](
+      zio: ZIO[ROut & R, E1, A]
+  ): ZIO[RIn & R, E1 | E, A]
 
 val handleAtoB: ZLayer[B, Nothing, A] = ??? // Changes A -> B
 val handleB: ZLayer[Any, Nothing, B]  = ??? // Eliminates B

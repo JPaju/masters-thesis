@@ -3,7 +3,7 @@
 
 % HOW TO USE? See https://ttweb.utugit.fi/thesis/doc/overview/
 
-\documentclass[language=english,version=draft,mainfont=none,minted=true]{utuftthesis}
+\documentclass[language=english,version=final,mainfont=none,minted=true]{utuftthesis}
 \setcounter{secnumdepth}{2}
 \setcounter{tocdepth}{2}
 \usepackage{float}
@@ -88,7 +88,7 @@ page counting to work!
 \appchapter{Type classes}\label{typeclasses}
 Type classes are a method to achieve ad-hoc polymorphism. They were first introduced by \textcite{ad-hoc-less-ad-hoc} in 1989 as a way to enable operator overloading in a programming language with Hindley-Milner type system. Eventually type classes were implemented in Haskell, largely based on Wadler's and Blott's proposal. A couple of years later, when applications of monads and related algebraic structures in programming were discovered~\cite{comp-lambda-monads}, type classes were a natural way to implement such algebraic structures.
 
-Type class is an abstraction that defines the behavior of a class of types. This enables one to implement generic functions that work with any type that is constrained to belong to a type class. A type is said to belong to a type class if it has \emph{instance} of that type class. An instance of a type class contains functions and/or values that implement the behavior of the type class. Instances are defined separately from the type for which the instance is. It is thus possible to provide type class instances for third party data types after they have been defined. The example in \refsource{typeclass} demonstrates how type classes enable the implementation of polymorphic functions that work with any data type that belongs to a specific type class.
+Type class is an abstraction that defines the behavior of a class of types. This enables one to implement generic functions that work with any type that is constrained to belong to a type class. A type is said to belong to a type class if it has an \emph{instance} of that type class. An instance of a type class contains functions and/or values that implement the behavior of the type class. Instances are defined separately from the type for which the instance is. It is thus possible to provide type class instances for third party data types after they have been defined. The example in \refsource{typeclass} demonstrates how type classes enable the implementation of polymorphic functions that work with any data type that belongs to a specific type class.
 
 \input{sources/typeclass}
 

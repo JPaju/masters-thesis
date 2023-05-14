@@ -24,7 +24,7 @@ object SubtleBugs:
   val program: IO[Either[String, Int]] =
     for
                       // Type of _ is Either[String, Unit]
-      _   <- mayFail  // Even if line evaluates to Left
+      _   <- mayFail  // Even if this line evaluates to Left
       res <- wontFail // ... this line will still be executed
     yield res
   // format: on
@@ -46,7 +46,7 @@ object EitherT:
           self.effect.flatMap {
             case Left(e)  => Monad[F].pure(Left(e))
             case Right(a) => f(a).effect
-          },
+          }
         )
 
   def mayFail: EitherT[IO, String, Unit]  = ???

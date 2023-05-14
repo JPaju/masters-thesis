@@ -7,7 +7,7 @@ def wontFail: IO[Either[Nothing, Int]] = ???
 val program: IO[Either[String, Int]] =
   for
                     // Type of _ is Either[String, Unit]
-    _   <- mayFail  // Even if line evaluates to Left
+    _   <- mayFail  // Even if this line evaluates to Left
     res <- wontFail // ... this line will still be executed
   yield res
 \end{minted}
