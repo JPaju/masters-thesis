@@ -68,7 +68,7 @@
 \ProcessKeyvalOptions*
 
 %% Load base
-\LoadClass[\utuftthesis@paper,12pt]{report}
+\LoadClass[\utuftthesis@paper,12pt,twoside]{report}
 
 %% !! Update this only if the document's main language is not finnish or english !!
 %% The template supports one of three options
@@ -351,13 +351,18 @@
 %
 % page width... left margin 4cm, right 2cm
 %
-\setlength{\hoffset}{0mm}
-\setlength{\marginparsep}{0mm}
-\setlength{\marginparwidth}{0mm}
-\setlength{\textwidth}{\paperwidth}
-\addtolength\textwidth{-60 mm}
-\setlength{\oddsidemargin}{-1 in}
-\addtolength\oddsidemargin{40 mm}
+%\setlength{\hoffset}{0mm}
+%\setlength{\marginparsep}{0mm}
+%\setlength{\marginparwidth}{0mm}
+%\setlength{\textwidth}{\paperwidth}
+%\addtolength\textwidth{-60 mm}
+%\setlength{\oddsidemargin}{-1 in}
+%\addtolength\oddsidemargin{40 mm}
+
+% For two-sided printing
+\setlength{\textwidth}{426.79135 pt}
+\setlength{\oddsidemargin}{52 pt}
+\setlength{\evensidemargin}{-28.33 pt}
 
 % page height... textheight starts at ~4cm from top, 
 % i.e. 1 in + 12 pt + 24 pt = 1.5 in 
@@ -453,7 +458,7 @@
 
 %% title page, reuses the standard \maketitle
 \renewcommand*{\maketitle}{%
-  %\clearpage 
+  \clearpage
   \begin{titlepage}
   \setcounter{page}{0}
   \pagenumbering{alph}
@@ -577,9 +582,16 @@
   \renewcommand{\baselinestretch}{1.655}
   \pagestyle{fancy}
   \renewcommand{\chaptermark}[1]{\markboth{\MakeUppercase{\chaptername\ \thechapter.\ ##1}}{}}
-  \lhead{\leftmark}
-  \chead{}
-  \rhead{\thepage}
+
+  % Two-sided headers with page number and chapter
+  \fancyhead[ER,OL]{\leftmark}
+  \fancyhead[EL,OR]{\thepage}
+
+  % One-sided headers with page number and chapter
+  %\lhead{\leftmark}
+  %\chead{}
+  %\rhead{\thepage}
+  
   \fancyfoot{}
   \cfoot{\version}
 }       
